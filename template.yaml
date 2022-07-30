@@ -1,0 +1,1117 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: >-
+  API for dbd-build-maker project
+
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Parameters:
+  Environment:
+    Type: String
+    Default: prod
+    AllowedValues:
+      - prod
+      - test
+    Description: Environment for deploy
+  TwitchClientId:
+    Type: String
+    Description: Client ID for Twitch application
+
+Mappings:
+  EnvironmentMap:
+    prod:
+      buildTable: dbd-build-maker-api-builds
+      certificateEdge: adce1a21-90b4-4120-8548-111215e582f0
+      certificateRegional: 5d4db894-c9fc-42ca-8f80-3c5da6c1678e
+      channelTable: dbd-build-maker-api-channels
+      corsDomain: https://dbd.dbowland.com
+      domain: dbd-build-maker-api.dbowland.com
+      domainInternal: dbd-build-maker-api-internal.dbowland.com
+      logStreamFunction: log-subscriber
+      schedulerFunction: scheduler-service
+      tokenTable: dbd-build-maker-api-tokens
+      zoneId: Z072422417XWM8PIXXSFA
+    test:
+      buildTable: dbd-build-maker-api-builds-test
+      certificateEdge: 6a48cba7-feb9-4de5-8cbf-d383140fcdef
+      certificateRegional: 14a32175-0c26-4768-b71f-3fa611b8f5a2
+      channelTable: dbd-build-maker-api-channels-test
+      corsDomain: https://dbd.bowland.link
+      domain: dbd-build-maker-api.bowland.link
+      domainInternal: dbd-build-maker-api-internal.bowland.link
+      logStreamFunction: log-subscriber-test
+      schedulerFunction: scheduler-service-test
+      tokenTable: dbd-build-maker-api-tokens-test
+      zoneId: Z01312547RGU1BYKIJXY
+
+Resources:
+  # API Gateway
+
+  Api:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: v1
+      Auth:
+        ApiKeyRequired: true # sets for all methods
+        UsagePlan:
+          CreateUsagePlan: PER_API
+          Description: Usage plan for dbd-build-maker-api
+      Domain:
+        DomainName: !FindInMap [EnvironmentMap, !Ref Environment, domainInternal]
+        CertificateArn: !Sub
+          - 'arn:aws:acm:us-east-1:${AWS::AccountId}:certificate/${Certificate}'
+          - Certificate: !FindInMap [EnvironmentMap, !Ref Environment, certificateEdge]
+        EndpointConfiguration: EDGE
+        Route53:
+          HostedZoneId: !FindInMap [EnvironmentMap, !Ref Environment, zoneId]
+        BasePath:
+          - /v1
+
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      CorsConfiguration:
+        AllowCredentials: true
+        AllowHeaders:
+          - Authorization
+          - Content-Type
+          - X-Amz-Date
+          - X-Amz-Security-Token
+          - X-Api-Key
+        AllowMethods:
+          - DELETE
+          - GET
+          - OPTIONS
+          - PATCH
+          - POST
+          - PUT
+        AllowOrigins:
+          - !FindInMap [EnvironmentMap, !Ref Environment, corsDomain]
+      Domain:
+        BasePath:
+          - /v1
+        CertificateArn: !Sub
+          - 'arn:aws:acm:${AWS::Region}:${AWS::AccountId}:certificate/${Certificate}'
+          - Certificate: !FindInMap [EnvironmentMap, !Ref Environment, certificateRegional]
+        DomainName: !FindInMap [EnvironmentMap, !Ref Environment, domain]
+        EndpointConfiguration: REGIONAL
+      FailOnWarnings: true
+      StageName: v1
+
+  # SAM won't create two Route53 records, so the HttpApi domain name is created separately
+  HttpRecordSet:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      AliasTarget:
+        DNSName: !Sub '${HttpApi.DomainName.RegionalDomainName}'
+        HostedZoneId: !Sub '${HttpApi.DomainName.RegionalHostedZoneId}'
+      HostedZoneId: !FindInMap [EnvironmentMap, !Ref Environment, zoneId]
+      Name: !FindInMap [EnvironmentMap, !Ref Environment, domain]
+      Type: A
+
+  # Lambda
+
+  DeleteItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/delete-item.deleteByIdHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api delete by ID
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+      Environment:
+        Variables:
+          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}
+            Method: delete
+            Auth:
+              ApiKeyRequired: true
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 10
+      Tracing: Active
+
+  DeleteItemLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: DeleteItemFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${DeleteItemFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  DeleteItemLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref DeleteItemLogGroup
+
+  GetAllItemsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/get-all-items.getAllItemsHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api get all items
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+      Environment:
+        Variables:
+          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels
+            Method: get
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 30
+      Tracing: Active
+
+  GetAllItemsLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: GetAllItemsFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetAllItemsFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  GetAllItemsLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref GetAllItemsLogGroup
+
+  GetAllBuildsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/get-all-builds.getAllBuildsHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api get all builds by channel
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+      Environment:
+        Variables:
+          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}/builds
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}/builds
+            Method: get
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 30
+      Tracing: Active
+
+  GetAllBuildsLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: GetAllBuildsFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetAllBuildsFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  GetAllBuildsLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref GetAllBuildsLogGroup
+
+  GetByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/get-by-id.getByIdHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api get by ID
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+      Environment:
+        Variables:
+          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}
+            Method: get
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 10
+      Tracing: Active
+
+  GetByIdLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: GetByIdFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetByIdFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  GetByIdLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref GetByIdLogGroup
+
+  GetBuildByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/get-build-by-id.getBuildByIdHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api get build by ID
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+      Environment:
+        Variables:
+          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}/builds/{buildId}
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}/builds/{buildId}
+            Method: get
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 10
+      Tracing: Active
+
+  GetBuildByIdLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: GetBuildByIdFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetBuildByIdFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  GetBuildByIdLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref GetBuildByIdLogGroup
+
+  GetBuildOptionsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/get-build-options.getBuildOptionsHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api get build options
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /build-options
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /build-options
+            Method: get
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 10
+      Tracing: Active
+
+  GetBuildOptionsLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: GetBuildOptionsFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetBuildOptionsFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  GetBuildOptionsLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref GetBuildOptionsLogGroup
+
+  GetTokenByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/get-token-by-id.getTokenByIdHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api get token by ID
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+      Environment:
+        Variables:
+          DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}/tokens/{token}
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}/tokens/{token}
+            Method: get
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 10
+      Tracing: Active
+
+  GetTokenByIdLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: GetTokenByIdFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetTokenByIdFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  GetTokenByIdLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref GetTokenByIdLogGroup
+
+  GetTwitchTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/get-twitch-validate-token.getTwitchValidateTokenHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api get twitch validate token
+      Policies:
+        - AWSLambdaBasicExecutionRole
+      Environment:
+        Variables:
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /twitch/validate-token
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /twitch/validate-token
+            Method: get
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 90
+      Tracing: Active
+
+  GetTwitchTokenLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: GetTwitchTokenFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetTwitchTokenFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  GetTwitchTokenGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref GetTwitchTokenLogGroup
+
+  PatchItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/patch-item.patchItemHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api patch item
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+      Environment:
+        Variables:
+          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}
+            Method: patch
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}
+            Method: patch
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 15
+      Tracing: Active
+
+  PatchLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: PatchItemFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PatchItemFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PatchGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PatchLogGroup
+
+  PatchBuildFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/patch-build.patchBuildHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api patch build
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+      Environment:
+        Variables:
+          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}/builds/{buildId}
+            Method: patch
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}/builds/{buildId}
+            Method: patch
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 15
+      Tracing: Active
+
+  PatchBuildLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: PatchBuildFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PatchBuildFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PatchBuildGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PatchBuildLogGroup
+
+  PutBuildFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/put-build.putBuildHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api put build
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+      Environment:
+        Variables:
+          BUILD_EXPIRE_HOURS: 72
+          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}/builds/{buildId}
+            Method: put
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}/builds/{buildId}
+            Method: put
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 60
+      Tracing: Active
+
+  PutBuildLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: PutBuildFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PutBuildFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PutBuildGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PutBuildLogGroup
+
+  PostItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/post-item.postItemHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api post item
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+      Environment:
+        Variables:
+          BUILD_EXPIRE_HOURS: 24
+          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          TOKEN_MIN_LENGTH: 3
+          TOKEN_MAX_LENGTH: 12
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels
+            Method: post
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels
+            Method: post
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 90
+      Tracing: Active
+
+  PostLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: PostItemFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostItemFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostLogGroup
+
+  PostTokenFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/post-token.postTokenHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api post token
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+      Environment:
+        Variables:
+          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+          TOKEN_EXPIRE_HOURS: 24
+          TOKEN_MIN_LENGTH: 3
+          TOKEN_MAX_LENGTH: 12
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}/tokens
+            Method: post
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}/tokens
+            Method: post
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 90
+      Tracing: Active
+
+  PostTokenLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: PostTokenFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostTokenFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostTokenGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostTokenLogGroup
+
+  PostPruneItemFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/post-start-prune.postStartPruneHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api post start prune
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+      Environment:
+        Variables:
+          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /start-prune
+            Method: post
+            Auth:
+              ApiKeyRequired: true
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 90
+      Tracing: Active
+
+  PostPruneLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: PostItemFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostPruneItemFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostPruneGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostPruneLogGroup
+
+  # DynamoDB
+
+  BuildTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: BuildId
+          AttributeType: S
+        - AttributeName: ChannelId
+          AttributeType: S
+        - AttributeName: Expiration
+          AttributeType: N
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: ExpirationIndex
+          KeySchema:
+            - AttributeName: Expiration
+              KeyType: HASH
+          Projection:
+            NonKeyAttributes:
+              - ChannelId
+            ProjectionType: INCLUDE
+      KeySchema:
+        - AttributeName: ChannelId
+          KeyType: HASH
+        - AttributeName: BuildId
+          KeyType: RANGE
+      TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  ChannelTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: ChannelId
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      KeySchema:
+        - AttributeName: ChannelId
+          KeyType: HASH
+      TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  TokenTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: ChannelId
+          AttributeType: S
+        - AttributeName: Expiration
+          AttributeType: N
+        - AttributeName: Token
+          AttributeType: S
+      BillingMode: PAY_PER_REQUEST
+      GlobalSecondaryIndexes:
+        - IndexName: ExpirationIndex
+          KeySchema:
+            - AttributeName: Expiration
+              KeyType: HASH
+          Projection:
+            NonKeyAttributes:
+              - ChannelId
+            ProjectionType: INCLUDE
+      KeySchema:
+        - AttributeName: ChannelId
+          KeyType: HASH
+        - AttributeName: Token
+          KeyType: RANGE
+      TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  # EventBridge
+
+  PruneEvent:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: Prunes old builds from build table
+      ScheduleExpression: 'cron(43 10 * * ? *)'
+      State: ENABLED
+      Targets:
+        - Arn: !Sub
+            - 'arn:aws:lambda:us-east-2:${AWS::AccountId}:function:${FunctionName}'
+            - FunctionName: !FindInMap [EnvironmentMap, !Ref Environment, schedulerFunction]
+          Id: SchedulerLambda
+          InputTransformer:
+            InputPathsMap:
+              'resources': '$.resources'
+            InputTemplate: !Sub
+              - |
+                {
+                  "resources": <resources>,
+                  "request": {
+                    "url": "https://${Domain}/v1/start-prune",
+                    "method": "POST",
+                    "data": { }
+                  },
+                  "apiKey": {
+                    "id": "${ApiKey}",
+                    "region": "us-east-2"
+                  }
+                }
+              - ApiKey: !Sub '${Api.ApiKey.APIKeyId}'
+                Domain: !FindInMap [EnvironmentMap, !Ref Environment, domainInternal]

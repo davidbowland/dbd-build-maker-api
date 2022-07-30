@@ -1,0 +1,11 @@
+{
+  "requestContext": {
+    "http": {
+      "method": "GET",
+      "path": "/v1/twitch/validate-token"
+    }
+  },
+  "headers": {
+    "X-Twitch-Token": "o87ytfvbnmkloiuygvbn"
+  }
+}

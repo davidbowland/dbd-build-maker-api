@@ -1,0 +1,16 @@
+{
+  "body": "[{\"op\":\"add\",\"path\":\"/completed\",\"value\":1659149502165}]",
+  "pathParameters": {
+    "buildId": "ytrfghjklkmnbvfty",
+    "channelId": "123456"
+  },
+  "requestContext": {
+    "http": {
+      "method": "PATCH",
+      "path": "/v1/channels/123456/builds/ytrfghjklkmnbvfty"
+    }
+  },
+  "headers": {
+    "X-Twitch-Token": "o87ytfvbnmkloiuygvbn"
+  }
+}

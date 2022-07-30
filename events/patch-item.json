@@ -1,0 +1,15 @@
+{
+  "body": "[{\"op\":\"replace\",\"path\":\"/name\",\"value\":\"NewChannel\"}]",
+  "pathParameters": {
+    "channelId": "123456"
+  },
+  "requestContext": {
+    "http": {
+      "method": "PATCH",
+      "path": "/v1/channels/123456"
+    }
+  },
+  "headers": {
+    "X-Twitch-Token": "o87ytfvbnmkloiuygvbn"
+  }
+}

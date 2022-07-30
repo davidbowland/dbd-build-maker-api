@@ -1,0 +1,72 @@
+import { applyPatch } from 'fast-json-patch'
+
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Channel, PatchOperation } from '../types'
+import { extractJsonPatchFromEvent, extractTokenFromEvent } from '../utils/events'
+import { getChannelById, setChannelById } from '../services/dynamodb'
+import { log, logError } from '../utils/logging'
+import { mutateObjectOnJsonPatch, throwOnInvalidJsonPatch } from '../config'
+import status from '../utils/status'
+import { validateToken } from '../services/twitch'
+
+const applyJsonPatch = async (
+  channel: Channel,
+  channelId: string,
+  patchOperations: PatchOperation[]
+): Promise<APIGatewayProxyResultV2<Channel>> => {
+  const updatedChannel = applyPatch(
+    channel,
+    patchOperations,
+    throwOnInvalidJsonPatch,
+    mutateObjectOnJsonPatch
+  ).newDocument
+  try {
+    await setChannelById(channelId, updatedChannel)
+    return { ...status.OK, body: JSON.stringify({ ...updatedChannel, channelId }) }
+  } catch (error) {
+    logError(error)
+    return status.INTERNAL_SERVER_ERROR
+  }
+}
+
+const patchById = async (
+  channelId: string,
+  patchOperations: PatchOperation[],
+  subject?: string
+): Promise<APIGatewayProxyResultV2<Channel>> => {
+  try {
+    if (subject && channelId !== subject) {
+      return status.FORBIDDEN
+    }
+
+    const channel = await getChannelById(channelId)
+    try {
+      return await applyJsonPatch(channel, channelId, patchOperations)
+    } catch (error) {
+      return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
+    }
+  } catch {
+    return status.NOT_FOUND
+  }
+}
+
+export const patchItemHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
+  log('Received event', { ...event, body: undefined })
+  try {
+    const channelId = event.pathParameters.channelId
+    const user = await validateToken(extractTokenFromEvent(event))
+    if (user === undefined) {
+      return status.FORBIDDEN
+    }
+
+    try {
+      const patchOperations = extractJsonPatchFromEvent(event)
+      const result = await patchById(channelId, patchOperations, user.id)
+      return result
+    } catch (error) {
+      return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
+    }
+  } catch (error) {
+    logError(error)
+    return status.INTERNAL_SERVER_ERROR
+  }
+}

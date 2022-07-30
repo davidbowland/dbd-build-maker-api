@@ -1,0 +1,12 @@
+{
+  "pathParameters": {
+    "buildId": "ytrfghjklkmnbvfty",
+    "channelId": "1234567"
+  },
+  "requestContext": {
+    "http": {
+      "method": "GET",
+      "path": "/v1/channels/1234567/builds/ytrfghjklkmnbvfty"
+    }
+  }
+}

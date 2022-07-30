@@ -1,0 +1,12 @@
+{
+  "pathParameters": {
+    "channelId": "1234567",
+    "token": "ytrfghjklkmnbvfty"
+  },
+  "requestContext": {
+    "http": {
+      "method": "GET",
+      "path": "/v1/channels/1234567/tokens/ytrfghjklkmnbvfty"
+    }
+  }
+}

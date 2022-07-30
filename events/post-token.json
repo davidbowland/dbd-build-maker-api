@@ -1,0 +1,15 @@
+{
+  "body": "{\"submitter\":\"cfb\"}",
+  "pathParameters": {
+    "channelId": "123456"
+  },
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/v1/channels/123456/tokens"
+    }
+  },
+  "headers": {
+    "X-Twitch-Token": "o87ytfvbnmkloiuygvbn"
+  }
+}
