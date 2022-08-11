@@ -44,11 +44,13 @@ export interface Token {
 }
 
 export interface TwitchTokenStatus {
+  id?: string
   name?: string
   status: 'valid' | 'invalid'
 }
 
 export interface User {
+  expiresIn: number
   id: string
   name: string
 }

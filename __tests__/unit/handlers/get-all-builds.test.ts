@@ -1,7 +1,7 @@
 import { mocked } from 'jest-mock'
 
 import * as dynamodb from '@services/dynamodb'
-import { buildId, buildKiller, channelId } from '../__mocks__'
+import { buildBatch, buildId, buildKiller, channelId } from '../__mocks__'
 import { APIGatewayProxyEventV2 } from '@types'
 import eventJson from '@events/get-all-builds.json'
 import { getAllBuildsHandler } from '@handlers/get-all-builds'
@@ -14,7 +14,7 @@ describe('get-all-builds', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
 
   beforeAll(() => {
-    mocked(dynamodb).queryBuildsByChannelId.mockResolvedValue([{ channelId, data: buildKiller, id: buildId }])
+    mocked(dynamodb).queryBuildsByChannelId.mockResolvedValue(buildBatch)
   })
 
   describe('getAllBuildsHandler', () => {

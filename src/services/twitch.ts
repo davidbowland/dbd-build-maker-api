@@ -1,7 +1,7 @@
+import { log, xrayCaptureHttps } from '../utils/logging'
 import { User } from '../types'
 import axios from 'axios'
 import { twitchClientId } from '../config'
-import { xrayCaptureHttps } from '../utils/logging'
 
 xrayCaptureHttps()
 const api = axios.create({
@@ -22,6 +22,7 @@ export const getChannelMods = (channelId: string, token: string, pagination?: an
       params: { after: pagination, broadcaster_id: channelId, first: MOD_FETCH_COUNT },
     })
     .then(async (response) => {
+      log('Twitch getChannelMods response', response.data)
       if (Object.keys(response.data.pagination).length === 0) {
         return response.data.data as unknown as string[]
       }
@@ -47,7 +48,9 @@ export const validateToken = (token: string): Promise<User | undefined> =>
   auth
     .get('/oauth2/validate', { headers: { Authorization: `OAuth ${token}` } })
     .then((response) => {
+      log('Twitch validateToken response', response.data)
       return {
+        expiresIn: response.data.expires_in,
         id: response.data.user_id,
         name: response.data.login,
       }

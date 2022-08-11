@@ -102,4 +102,4 @@ export const extractJsonPatchFromEvent = (event: APIGatewayProxyEventV2): PatchO
 
 export const extractSubmitterFromEvent = (event: APIGatewayProxyEventV2): string => parseEventBody(event).submitter
 
-export const extractTokenFromEvent = (event: APIGatewayProxyEventV2): string => event.headers['X-Twitch-Token']
+export const extractTokenFromEvent = (event: APIGatewayProxyEventV2): string => event.headers['x-twitch-token']

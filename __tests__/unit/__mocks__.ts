@@ -1,4 +1,4 @@
-import { Build, Channel, PatchOperation, Token, User } from '@types'
+import { Build, BuildBatch, Channel, ChannelBatch, PatchOperation, Token, User } from '@types'
 
 export const buildId = 'ytrfghjklkmnbvfty'
 
@@ -63,6 +63,13 @@ export const twitchAuthToken = 'ytfghjklkgtyuijnmk'
 export const userId = channelId
 
 export const user: User = {
+  expiresIn: 5543954,
   id: userId,
   name: 'btse',
 }
+
+/* Batches */
+
+export const buildBatch: BuildBatch[] = [{ channelId, data: buildKiller, id: buildId }]
+
+export const channelBatch: ChannelBatch[] = [{ data: channel, id: channelId }]

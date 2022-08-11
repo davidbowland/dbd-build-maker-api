@@ -1,6 +1,8 @@
 {
   "Killers": {
+    "Any": ["Any", "None"],
     "Artist": [
+      "Any",
       "None",
       "Automatic Drawing",
       "Charcoal Stick",
@@ -25,6 +27,7 @@
       "Vibrant Obituary"
     ],
     "Blight": [
+      "Any",
       "None",
       "Adrenaline Vial",
       "Alchemist's Ring",
@@ -48,6 +51,7 @@
       "Vigo's Journal"
     ],
     "Cannibal": [
+      "Any",
       "None",
       "Award-winning Chilli",
       "Begrimed Chains",
@@ -71,6 +75,7 @@
       "Vegetable Oil"
     ],
     "Cenobite": [
+      "Any",
       "None",
       "Bent Nail",
       "Burning Candle",
@@ -94,6 +99,7 @@
       "Wriggling Maggots"
     ],
     "Clown": [
+      "Any",
       "None",
       "Bottle of Chloroform",
       "Cheap Gin Bottle",
@@ -117,6 +123,7 @@
       "VHS Porn"
     ],
     "Deathslinger": [
+      "Any",
       "None",
       "Barbed Wire",
       "Bayshore's Cigar",
@@ -140,6 +147,7 @@
       "Warden's Keys"
     ],
     "Demogorgon": [
+      "Any",
       "None",
       "Barb's Glasses",
       "Black Heart",
@@ -163,6 +171,7 @@
       "Viscous Webbing"
     ],
     "Doctor": [
+      "Any",
       "None",
       "\"Calm\" - Carter's Notes",
       "\"Calm\" - Class I",
@@ -186,6 +195,7 @@
       "Scrapped Tape"
     ],
     "Dredge": [
+      "Any",
       "None",
       "Air Freshener",
       "Boat Key",
@@ -209,6 +219,7 @@
       "Worry Stone"
     ],
     "Executioner (Pyramid Head)": [
+      "Any",
       "None",
       "Black Strap",
       "Burning Man Painting",
@@ -233,6 +244,7 @@
       "Wax Doll"
     ],
     "Ghost Face": [
+      "Any",
       "None",
       "\"Ghost Face Caught on Tape\"",
       "\"Philly\"",
@@ -256,6 +268,7 @@
       "Walleye's Matchbook"
     ],
     "Hag": [
+      "Any",
       "None",
       "Bloodied Mud",
       "Bloodied Water",
@@ -279,6 +292,7 @@
       "Willow Wreath"
     ],
     "Hillbilly": [
+      "Any",
       "None",
       "Apex Muffler",
       "Big Buckle",
@@ -302,6 +316,7 @@
       "Tuned Carburettor"
     ],
     "Huntress": [
+      "Any",
       "None",
       "Amanita Toxin",
       "Bandaged Haft",
@@ -325,6 +340,7 @@
       "Yellowed Cloth"
     ],
     "Legion": [
+      "Any",
       "None",
       "BFFs",
       "Defaced Smiley Pin",
@@ -348,6 +364,7 @@
       "The Legion Pin"
     ],
     "Nemesis": [
+      "Any",
       "None",
       "Admin Wristband",
       "Adrenaline Injector",
@@ -371,6 +388,7 @@
       "Zombie Heart"
     ],
     "Nightmare (Freddy Kruger)": [
+      "Any",
       "None",
       "\"Z\" Block",
       "Black Box",
@@ -394,6 +412,7 @@
       "Wool Shirt"
     ],
     "Nurse": [
+      "Any",
       "None",
       "\"Bad Man's\" Last Breath",
       "Anxious Gasp",
@@ -417,6 +436,7 @@
       "Wooden Horse"
     ],
     "Oni": [
+      "Any",
       "None",
       "Akito's Crutch",
       "Blackened Toenail",
@@ -440,6 +460,7 @@
       "Yamaoka Sashimono"
     ],
     "Onryō": [
+      "Any",
       "None",
       "Bloody Fingernails",
       "Cabin Sign",
@@ -463,6 +484,7 @@
       "Yoichi's Fishing Net"
     ],
     "Pig": [
+      "Any",
       "None",
       "Amanda's Letter",
       "Amanda's Secret",
@@ -486,6 +508,7 @@
       "Workshop Grease"
     ],
     "Plague": [
+      "Any",
       "None",
       "Ashen Apple",
       "Black Incense",
@@ -509,6 +532,7 @@
       "Worship Tablet"
     ],
     "Shape (Michael Myers)": [
+      "Any",
       "None",
       "Blond Hair",
       "Boyfriend's Memo",
@@ -532,6 +556,7 @@
       "Vanity Mirror"
     ],
     "Spirit": [
+      "Any",
       "None",
       "Dried Cherry Blossom",
       "Furin",
@@ -555,6 +580,7 @@
       "Zōri"
     ],
     "Trapper": [
+      "Any",
       "None",
       "4-Coil Spring Kit",
       "Bear Oil",
@@ -578,6 +604,7 @@
       "Wax Brick"
     ],
     "Trickster": [
+      "Any",
       "None",
       "Bloody Boa",
       "Caged Heart Shoes",
@@ -601,6 +628,7 @@
       "Waiting For You Watch"
     ],
     "Twins": [
+      "Any",
       "None",
       "Baby Teeth",
       "Bloody Black Hood",
@@ -624,6 +652,7 @@
       "Weighty Rattle"
     ],
     "Wraith": [
+      "Any",
       "None",
       "\"All Seeing\" - Blood",
       "\"All Seeing\" - Spirit",
@@ -648,6 +677,7 @@
     ]
   },
   "KillerOfferings": [
+    "Any",
     "None",
     "Ardent Raven Wreath",
     "Ardent Shrike Wreath",
@@ -668,6 +698,7 @@
     "Tanager Wreath"
   ],
   "KillerPerks": [
+    "Any",
     "None",
     "A Nurse's Calling",
     "Agitation",
@@ -768,6 +799,7 @@
     "Zanshin Tactics"
   ],
   "Survivors": [
+    "Any",
     "Ace Visconti",
     "Adam Francis",
     "Ashley J. Williams",
@@ -801,7 +833,9 @@
     "Zarina Kassir"
   ],
   "SurvivorItems": {
+    "Any": ["Any", "None"],
     "Flashlight": [
+      "Any",
       "None",
       "Battery",
       "Broken Bulb",
@@ -819,6 +853,7 @@
       "Wide Lens"
     ],
     "Key": [
+      "Any",
       "None",
       "Blood Amber",
       "Eroded Token",
@@ -831,6 +866,7 @@
       "Weaved Ring"
     ],
     "Map": [
+      "Any",
       "None",
       "Black Silk Cord",
       "Crystal Bead",
@@ -843,6 +879,7 @@
       "Yellow Wire"
     ],
     "Med-Kit": [
+      "Any",
       "None",
       "Abdominal Dressing",
       "Anti-Haemorrhagic Syringe",
@@ -860,6 +897,7 @@
       "Surgical Suture"
     ],
     "Toolbox": [
+      "Any",
       "None",
       "Brand New Part",
       "Clean Rag",
@@ -876,6 +914,7 @@
     "None": ["None"]
   },
   "SurvivorPerks": [
+    "Any",
     "None",
     "Ace in the Hole",
     "Adrenaline",
@@ -986,6 +1025,7 @@
     "Windows of Opportunity"
   ],
   "SurvivorOfferings": [
+    "Any",
     "None",
     "Black Salt Statuette",
     "Bog Laurel Sachet",

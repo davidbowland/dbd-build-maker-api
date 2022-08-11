@@ -134,6 +134,7 @@ describe('twitch', () => {
 
   describe('validateToken', () => {
     const validateEndpointUser = {
+      expires_in: user.expiresIn,
       login: user.name,
       user_id: user.id,
     }

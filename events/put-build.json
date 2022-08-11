@@ -11,6 +11,6 @@
     }
   },
   "headers": {
-    "X-Twitch-Token": "o87ytfvbnmkloiuygvbn"
+    "x-twitch-token": "o87ytfvbnmkloiuygvbn"
   }
 }

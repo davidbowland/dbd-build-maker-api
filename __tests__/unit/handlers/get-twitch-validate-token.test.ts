@@ -22,6 +22,7 @@ describe('get-twitch-validate-token', () => {
       const result = await getTwitchValidateTokenHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))
       expect(JSON.parse(result.body)).toEqual({
+        id: '123456',
         name: 'btse',
         status: 'valid',
       })

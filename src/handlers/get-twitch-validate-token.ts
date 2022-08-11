@@ -11,6 +11,7 @@ const generateResult = (user: User): TwitchTokenStatus => {
     }
   }
   return {
+    id: user.id,
     name: user.name,
     status: 'valid',
   }
@@ -23,6 +24,7 @@ export const getTwitchValidateTokenHandler = async (
   try {
     const token = extractTokenFromEvent(event)
     const user = await validateToken(token)
+    log({ token, user })
     const result = generateResult(user)
     return { ...status.OK, body: JSON.stringify(result) }
   } catch (error) {

@@ -78,6 +78,7 @@ Resources:
           - X-Amz-Date
           - X-Amz-Security-Token
           - X-Api-Key
+          - X-Twitch-Token
         AllowMethods:
           - DELETE
           - GET
@@ -138,6 +139,12 @@ Resources:
             Method: delete
             Auth:
               ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}
+            Method: delete
       Tags:
         'created-by': 'dbd-build-maker-api'
         'created-for': 'dbd-build-maker'
