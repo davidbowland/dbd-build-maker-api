@@ -4,7 +4,7 @@ import * as dynamodb from '@services/dynamodb'
 import * as events from '@utils/events'
 import * as twitch from '@services/twitch'
 import { APIGatewayProxyEventV2, Build, PatchOperation } from '@types'
-import { buildId, buildKiller, channelId, user } from '../__mocks__'
+import { buildId, buildKiller, channel, channelId, user } from '../__mocks__'
 import eventJson from '@events/patch-build.json'
 import { patchBuildHandler } from '@handlers/patch-build'
 import status from '@utils/status'
@@ -20,6 +20,7 @@ describe('patch-build', () => {
 
   beforeAll(() => {
     mocked(dynamodb).getBuildById.mockResolvedValue(buildKiller)
+    mocked(dynamodb).getChannelById.mockResolvedValue(channel)
     mocked(events).extractJsonPatchFromEvent.mockImplementation((event) => JSON.parse(event.body))
     mocked(twitch).validateToken.mockResolvedValue(user)
   })
@@ -59,6 +60,12 @@ describe('patch-build', () => {
       mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 1245, id: 'not-valid', name: 'whatever' })
       const result = await patchBuildHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
+    })
+
+    test('expect OK when token is mod of channel', async () => {
+      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 8765, id: 'not-valid', name: 'mod1' })
+      const result = await patchBuildHandler(event)
+      expect(result).toEqual(expect.objectContaining(status.OK))
     })
 
     test('expect FORBIDDEN when path is not mutable', async () => {

@@ -8,7 +8,7 @@ import {
   throwOnInvalidJsonPatch,
 } from '../config'
 import { extractJsonPatchFromEvent, extractTokenFromEvent } from '../utils/events'
-import { getBuildById, setBuildById } from '../services/dynamodb'
+import { getBuildById, getChannelById, setBuildById } from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
 import { validateToken } from '../services/twitch'
@@ -34,16 +34,9 @@ const applyJsonPatch = async (
 const patchById = async (
   channelId: string,
   buildId: string,
-  patchOperations: PatchOperation[],
-  subject?: string
+  patchOperations: PatchOperation[]
 ): Promise<APIGatewayProxyResultV2<Build>> => {
   try {
-    if (subject && channelId !== subject) {
-      return status.FORBIDDEN
-    } else if (subject && !patchOperations.every((value) => value.path === '/completed')) {
-      return status.FORBIDDEN
-    }
-
     const build = await getBuildById(channelId, buildId)
     try {
       return await applyJsonPatch(build, channelId, buildId, patchOperations)
@@ -60,11 +53,16 @@ export const patchBuildHandler = async (event: APIGatewayProxyEventV2): Promise<
   try {
     const buildId = event.pathParameters.buildId
     const channelId = event.pathParameters.channelId
+    const channel = await getChannelById(channelId)
     const user = await validateToken(extractTokenFromEvent(event))
     try {
       const patchOperations = extractJsonPatchFromEvent(event)
-      const result = await patchById(channelId, buildId, patchOperations, user.id)
-      return result
+      if (user === undefined || (channelId !== user.id && channel.mods.indexOf(user.name) < 0)) {
+        return status.FORBIDDEN
+      } else if (!patchOperations.every((value) => value.path === '/completed')) {
+        return status.FORBIDDEN
+      }
+      return await patchById(channelId, buildId, patchOperations)
     } catch (error) {
       return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
     }
