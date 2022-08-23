@@ -1,10 +1,15 @@
 import { applyPatch } from 'fast-json-patch'
 
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Build, PatchOperation } from '../types'
+import {
+  buildCompletedExpireDuration,
+  buildUncompletedExpireDuration,
+  mutateObjectOnJsonPatch,
+  throwOnInvalidJsonPatch,
+} from '../config'
 import { extractJsonPatchFromEvent, extractTokenFromEvent } from '../utils/events'
 import { getBuildById, setBuildById } from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
-import { mutateObjectOnJsonPatch, throwOnInvalidJsonPatch } from '../config'
 import status from '../utils/status'
 import { validateToken } from '../services/twitch'
 
@@ -14,7 +19,9 @@ const applyJsonPatch = async (
   buildId: string,
   patchOperations: PatchOperation[]
 ): Promise<APIGatewayProxyResultV2<Build>> => {
-  const updatedBuild = applyPatch(build, patchOperations, throwOnInvalidJsonPatch, mutateObjectOnJsonPatch).newDocument
+  const patchedBuild = applyPatch(build, patchOperations, throwOnInvalidJsonPatch, mutateObjectOnJsonPatch).newDocument
+  const expirationDuration = patchedBuild.completed ? buildCompletedExpireDuration : buildUncompletedExpireDuration
+  const updatedBuild = { ...patchedBuild, expiration: new Date().getTime() + expirationDuration }
   try {
     await setBuildById(channelId, buildId, updatedBuild)
     return { ...status.OK, body: JSON.stringify({ ...updatedBuild, buildId, channelId }) }

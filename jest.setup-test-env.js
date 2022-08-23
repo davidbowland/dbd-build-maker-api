@@ -1,6 +1,7 @@
 // Builds
 
-process.env.BUILD_EXPIRE_HOURS = '72'
+process.env.BUILD_COMPLETED_EXPIRE_HOURS = '6'
+process.env.BUILD_UNCOMPLETED_EXPIRE_DAYS = '15'
 
 // DynamoDB
 

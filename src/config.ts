@@ -7,7 +7,11 @@ axiosRetry(axios, { retries: 3 })
 
 // Builds
 
-export const buildExpireHours = parseInt(process.env.BUILD_EXPIRE_HOURS as string, 10)
+// 60 minutes * 60 seconds * 1000 milliseconds = 3_600_000
+export const buildCompletedExpireDuration = parseInt(process.env.BUILD_COMPLETED_EXPIRE_HOURS as string, 10) * 3_600_000
+// 24 hours * 60 minutes * 60 seconds * 1000 milliseconds = 86_400_000
+export const buildUncompletedExpireDuration =
+  parseInt(process.env.BUILD_UNCOMPLETED_EXPIRE_DAYS as string, 10) * 86_400_000
 
 // DynamoDB
 

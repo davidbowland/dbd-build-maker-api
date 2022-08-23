@@ -16,7 +16,7 @@ jest.mock('@utils/logging')
 
 describe('patch-build', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
-  const expectedResult = { ...buildKiller, completed: 1659149502165 } as Build
+  const { expiration: _, ...completedBuild } = { ...buildKiller, completed: 1659149502165 } as Build
 
   beforeAll(() => {
     mocked(dynamodb).getBuildById.mockResolvedValue(buildKiller)
@@ -56,7 +56,7 @@ describe('patch-build', () => {
     })
 
     test("expect FORBIDDEN when token doesn't match channel", async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce({ id: 'not-valid', name: 'whatever' })
+      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 1245, id: 'not-valid', name: 'whatever' })
       const result = await patchBuildHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
@@ -83,13 +83,32 @@ describe('patch-build', () => {
 
     test('expect setBuildById called with updated object', async () => {
       await patchBuildHandler(event)
-      expect(mocked(dynamodb).setBuildById).toHaveBeenCalledWith(channelId, buildId, expectedResult)
+      expect(mocked(dynamodb).setBuildById).toHaveBeenCalledWith(
+        channelId,
+        buildId,
+        expect.objectContaining(completedBuild)
+      )
     })
 
-    test('expect OK and body', async () => {
+    test('expect OK and body when build completed', async () => {
       const result = await patchBuildHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))
-      expect(JSON.parse(result.body)).toEqual({ ...expectedResult, buildId, channelId })
+      expect(JSON.parse(result.body)).toEqual(expect.objectContaining({ ...completedBuild, buildId, channelId }))
+      expect(JSON.parse(result.body).expiration).toBeGreaterThan(new Date().getTime())
+    })
+
+    test('expect OK and body when build not completed', async () => {
+      const currentTime = new Date().getTime()
+      mocked(dynamodb).getBuildById.mockResolvedValueOnce({ ...completedBuild, expiration: currentTime })
+      mocked(events).extractJsonPatchFromEvent.mockReturnValueOnce([
+        { op: 'remove', path: '/completed' },
+      ] as unknown[] as PatchOperation[])
+      const { completed: _, ...expectedResult } = completedBuild
+      const result = await patchBuildHandler(event)
+
+      expect(result).toEqual(expect.objectContaining(status.OK))
+      expect(JSON.parse(result.body)).toEqual(expect.objectContaining({ ...expectedResult, buildId, channelId }))
+      expect(JSON.parse(result.body).expiration).toBeGreaterThan(currentTime)
     })
   })
 })

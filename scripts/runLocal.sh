@@ -15,7 +15,8 @@ SAM_TEMPLATE=template.yaml
 sam build --template ${SAM_TEMPLATE}
 
 # Start the API locally
-export BUILD_EXPIRE_HOURS=72
+export BUILD_COMPLETED_EXPIRE_HOURS=6
+export BUILD_UNCOMPLETED_EXPIRE_DAYS=15
 export DYNAMODB_BUILD_TABLE_NAME=dbd-build-maker-api-builds-test
 export DYNAMODB_CHANNEL_TABLE_NAME=dbd-build-maker-api-channels-test
 export DYNAMODB_TOKEN_TABLE_NAME=dbd-build-maker-api-tokens-test

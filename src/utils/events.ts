@@ -1,9 +1,6 @@
 import { APIGatewayProxyEventV2, Build, PatchOperation } from '../types'
-import { buildExpireHours } from '../config'
 import buildOptions from '../assets/build-options.json'
-
-// 60 minutes * 60 seconds * 1000 milliseconds = 3_600_000
-const BUILD_EXPIRATION_DURATION = buildExpireHours * 3_600_000
+import { buildUncompletedExpireDuration } from '../config'
 
 /* DBD Build Maker */
 
@@ -68,7 +65,7 @@ export const formatBuild = (build: Build): Build => {
       throw new Error('"perk4" has an invalid value')
     }
   }
-  const lastExpiration = new Date().getTime() + BUILD_EXPIRATION_DURATION
+  const lastExpiration = new Date().getTime() + buildUncompletedExpireDuration
   if (build.expiration !== undefined && build.expiration > lastExpiration) {
     throw new Error('expiration is outside acceptable range')
   }

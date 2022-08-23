@@ -18,6 +18,7 @@ export const buildSurvivor: Build = {
   addon1: 'Battery',
   addon2: 'None',
   character: 'Jill Valentine',
+  completed: 1661234676238,
   expiration: 1659106766021,
   item: 'Flashlight',
   offering: 'Fragrant Sweet William',

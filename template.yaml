@@ -687,9 +687,14 @@ Resources:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
             TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
       Environment:
         Variables:
+          BUILD_COMPLETED_EXPIRE_HOURS: 6
+          BUILD_UNCOMPLETED_EXPIRE_DAYS: 15
           DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -754,7 +759,7 @@ Resources:
             TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
       Environment:
         Variables:
-          BUILD_EXPIRE_HOURS: 72
+          BUILD_UNCOMPLETED_EXPIRE_DAYS: 15
           DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
           DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
           TWITCH_CLIENT_ID: !Ref TwitchClientId
@@ -819,10 +824,7 @@ Resources:
             TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
       Environment:
         Variables:
-          BUILD_EXPIRE_HOURS: 24
           DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
-          TOKEN_MIN_LENGTH: 3
-          TOKEN_MAX_LENGTH: 12
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -884,10 +886,13 @@ Resources:
         - DynamoDBCrudPolicy:
             TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
         - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+        - DynamoDBCrudPolicy:
             TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
       Environment:
         Variables:
           DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
           DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
           TOKEN_EXPIRE_HOURS: 24
           TOKEN_MIN_LENGTH: 3
