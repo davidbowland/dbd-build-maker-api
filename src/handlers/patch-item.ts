@@ -1,6 +1,6 @@
 import { applyPatch } from 'fast-json-patch'
 
-import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Channel, PatchOperation } from '../types'
+import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Channel, PatchOperation, User } from '../types'
 import { extractJsonPatchFromEvent, extractTokenFromEvent } from '../utils/events'
 import { getChannelById, setChannelById } from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
@@ -31,14 +31,13 @@ const applyJsonPatch = async (
 const patchById = async (
   channelId: string,
   patchOperations: PatchOperation[],
-  subject?: string
+  user?: User
 ): Promise<APIGatewayProxyResultV2<Channel>> => {
   try {
-    if (subject && channelId !== subject) {
+    const channel = await getChannelById(channelId)
+    if (user === undefined || (user.id !== channelId && channel.mods.indexOf(user.name) < 0)) {
       return status.FORBIDDEN
     }
-
-    const channel = await getChannelById(channelId)
     try {
       return await applyJsonPatch(channel, channelId, patchOperations)
     } catch (error) {
@@ -54,14 +53,14 @@ export const patchItemHandler = async (event: APIGatewayProxyEventV2): Promise<A
   try {
     const channelId = event.pathParameters.channelId
     const user = await validateToken(extractTokenFromEvent(event))
-    if (user === undefined) {
-      return status.FORBIDDEN
-    }
 
     try {
       const patchOperations = extractJsonPatchFromEvent(event)
-      const result = await patchById(channelId, patchOperations, user.id)
-      return result
+      if (!patchOperations.every((value) => value.path === '/notes')) {
+        return status.FORBIDDEN
+      }
+
+      return await patchById(channelId, patchOperations, user)
     } catch (error) {
       return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
     }

@@ -37,6 +37,7 @@ export const channelId = '123456'
 
 export const channelInfo = {
   name: 'MyChannel',
+  notes: 'No new perks',
   pic: 'https://twitch.com/logo.png',
 }
 
@@ -47,7 +48,7 @@ export const channel: Channel = {
   mods,
 }
 
-export const jsonPatchOperations: PatchOperation[] = [{ op: 'replace', path: '/name', value: 'NewChannel' }]
+export const jsonPatchOperations: PatchOperation[] = [{ op: 'replace', path: '/notes', value: 'No Nurse' }]
 
 export const submitter = 'cfb'
 

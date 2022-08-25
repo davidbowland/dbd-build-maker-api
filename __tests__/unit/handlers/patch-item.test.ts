@@ -16,7 +16,7 @@ jest.mock('@utils/logging')
 
 describe('patch-item', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
-  const expectedResult = { ...channel, name: 'NewChannel' } as Channel
+  const expectedResult = { ...channel, notes: 'No Nurse' } as Channel
 
   beforeAll(() => {
     mocked(dynamodb).getChannelById.mockResolvedValue(channel)
@@ -25,6 +25,24 @@ describe('patch-item', () => {
   })
 
   describe('patchItemHandler', () => {
+    test('expect INTERNAL_SERVER_ERROR on validateToken reject', async () => {
+      mocked(twitch).validateToken.mockRejectedValueOnce(undefined)
+      const result = await patchItemHandler(event)
+      expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
+    })
+
+    test('expect FORBIDDEN when validateToken returns undefined', async () => {
+      mocked(twitch).validateToken.mockResolvedValueOnce(undefined)
+      const result = await patchItemHandler(event)
+      expect(result).toEqual(status.FORBIDDEN)
+    })
+
+    test("expect FORBIDDEN when token doesn't match channel", async () => {
+      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 93842, id: 'not-valid', name: 'whatever' })
+      const result = await patchItemHandler(event)
+      expect(result).toEqual(status.FORBIDDEN)
+    })
+
     test('expect BAD_REQUEST when unable to parse body', async () => {
       mocked(events).extractJsonPatchFromEvent.mockImplementationOnce(() => {
         throw new Error('Bad request')
@@ -35,7 +53,7 @@ describe('patch-item', () => {
 
     test('expect BAD_REQUEST when patch operations are invalid', async () => {
       mocked(events).extractJsonPatchFromEvent.mockReturnValueOnce([
-        { op: 'replace', path: '/fnord' },
+        { op: 'add', path: '/notes' },
       ] as unknown[] as PatchOperation[])
       const result = await patchItemHandler(event)
       expect(result).toEqual(expect.objectContaining({ statusCode: status.BAD_REQUEST.statusCode }))
@@ -49,22 +67,18 @@ describe('patch-item', () => {
       expect(result).toEqual(expect.objectContaining({ statusCode: status.BAD_REQUEST.statusCode }))
     })
 
-    test('expect INTERNAL_SERVER_ERROR on validateToken reject', async () => {
-      mocked(twitch).validateToken.mockRejectedValueOnce(undefined)
-      const result = await patchItemHandler(event)
-      expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
-    })
-
-    test('expect FORBIDDEN when validateToken returns undefined', async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce(undefined)
+    test("expect FORBIDDEN when patch operations don't match /notes", async () => {
+      mocked(events).extractJsonPatchFromEvent.mockReturnValueOnce([
+        { op: 'add', path: '/fnord' },
+      ] as unknown[] as PatchOperation[])
       const result = await patchItemHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
-    test("expect FORBIDDEN on when token doesn't match channel", async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce({ id: 'not-valid', name: 'whatever' })
+    test('expect OK when mod name matches channel', async () => {
+      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 93842, id: 'not-valid', name: 'mod1' })
       const result = await patchItemHandler(event)
-      expect(result).toEqual(status.FORBIDDEN)
+      expect(result).toEqual(expect.objectContaining(status.OK))
     })
 
     test('expect NOT_FOUND on getChannelById reject', async () => {

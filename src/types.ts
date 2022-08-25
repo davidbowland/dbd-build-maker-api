@@ -26,6 +26,7 @@ export interface BuildBatch {
 export interface Channel {
   mods: string[]
   name: string
+  notes?: string
   pic: string
 }
 

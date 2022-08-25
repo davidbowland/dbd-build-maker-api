@@ -1,5 +1,5 @@
 {
-  "body": "[{\"op\":\"replace\",\"path\":\"/name\",\"value\":\"NewChannel\"}]",
+  "body": "[{\"op\":\"replace\",\"path\":\"/notes\",\"value\":\"No Nurse\"}]",
   "pathParameters": {
     "channelId": "123456"
   },
