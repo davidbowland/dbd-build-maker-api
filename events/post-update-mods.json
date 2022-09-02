@@ -1,0 +1,15 @@
+{
+  "body": "{}",
+  "pathParameters": {
+    "channelId": "123456"
+  },
+  "requestContext": {
+    "http": {
+      "method": "POST",
+      "path": "/v1/channels/123456/update-mods"
+    }
+  },
+  "headers": {
+    "x-twitch-token": "o87ytfvbnmkloiuygvbn"
+  }
+}

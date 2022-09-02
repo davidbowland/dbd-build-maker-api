@@ -25,7 +25,7 @@ describe('post-start-prune', () => {
     mocked(dynamodb).scanExpiredTokens.mockResolvedValue([
       {
         channelId,
-        token: buildToken,
+        token: buildToken.value,
       },
     ])
   })
@@ -62,12 +62,12 @@ describe('post-start-prune', () => {
 
     test('expect channelId and token passed to deleteDecisionById', async () => {
       await postStartPruneHandler(event)
-      expect(mocked(dynamodb).deleteTokenById).toHaveBeenCalledWith(channelId, buildToken)
+      expect(mocked(dynamodb).deleteTokenById).toHaveBeenCalledWith(channelId, buildToken.value)
     })
 
     test('expect NO_CONTENT', async () => {
       const result = await postStartPruneHandler(event)
-      expect(result).toEqual(expect.objectContaining(status.NO_CONTENT))
+      expect(result).toEqual(status.NO_CONTENT)
     })
   })
 })

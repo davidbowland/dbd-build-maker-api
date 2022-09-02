@@ -1006,6 +1006,69 @@ Resources:
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
       LogGroupName: !Ref PostPruneLogGroup
 
+  PostUpdateModsFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/post-update-mods.postUpdateModsHandler
+      CodeUri: './dist'
+      Runtime: nodejs16.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api post update mods
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+      Environment:
+        Variables:
+          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}/update-mods
+            Method: post
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}/update-mods
+            Method: post
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 90
+      Tracing: Active
+
+  PostUpdateModsLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: PostUpdateModsFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PostUpdateModsFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PostUpdateModsGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PostUpdateModsLogGroup
+
   # DynamoDB
 
   BuildTable:
