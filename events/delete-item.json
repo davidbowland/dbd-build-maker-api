@@ -3,6 +3,7 @@
     "channelId": "123456"
   },
   "requestContext": {
+    "domainPrefix": "dbd-build-maker-api",
     "http": {
       "method": "DELETE",
       "path": "/v1/channels/123456"

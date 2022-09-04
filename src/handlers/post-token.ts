@@ -1,11 +1,11 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
-import { extractSubmitterFromEvent, extractTokenFromEvent } from '../utils/events'
 import { getChannelById, setTokenById } from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
 import { Token } from '../types'
+import { extractSubmitterFromEvent } from '../utils/events'
 import { getNextToken } from '../utils/token-generator'
+import { getUserFromEvent } from '../services/twitch'
 import status from '../utils/status'
-import { validateToken } from '../services/twitch'
 
 const createNewToken = async (channelId: string, submitter): Promise<APIGatewayProxyResultV2<Token>> => {
   const buildToken = await getNextToken(channelId)
@@ -24,10 +24,9 @@ export const postTokenHandler = async (event: APIGatewayProxyEventV2): Promise<A
   try {
     const channelId = event.pathParameters.channelId
     const submitter = extractSubmitterFromEvent(event)
-    const token = extractTokenFromEvent(event)
     try {
       const channel = await getChannelById(channelId)
-      const user = await validateToken(token)
+      const user = await getUserFromEvent(event)
       if (user === undefined || (user.id !== channelId && channel.mods.indexOf(user.name) < 0)) {
         return status.FORBIDDEN
       }

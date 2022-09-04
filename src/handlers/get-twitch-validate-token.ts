@@ -1,8 +1,7 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, TwitchTokenStatus, User } from '../types'
 import { log, logError } from '../utils/logging'
-import { extractTokenFromEvent } from '../utils/events'
+import { getUserFromEvent } from '../services/twitch'
 import status from '../utils/status'
-import { validateToken } from '../services/twitch'
 
 const generateResult = (user: User): TwitchTokenStatus => {
   if (user === undefined) {
@@ -22,10 +21,9 @@ export const getTwitchValidateTokenHandler = async (
 ): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
   try {
-    const token = extractTokenFromEvent(event)
-    const user = await validateToken(token)
-    log({ token, user })
+    const user = await getUserFromEvent(event)
     const result = generateResult(user)
+    log({ result })
     return { ...status.OK, body: JSON.stringify(result) }
   } catch (error) {
     logError(error)

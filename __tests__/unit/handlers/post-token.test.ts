@@ -24,7 +24,7 @@ describe('post-token', () => {
     mocked(events).extractSubmitterFromEvent.mockReturnValue(submitter)
     mocked(events).extractTokenFromEvent.mockReturnValue(twitchAuthToken)
     mocked(tokenGenerator).getNextToken.mockResolvedValue(buildToken)
-    mocked(twitch).validateToken.mockResolvedValue(user)
+    mocked(twitch).getUserFromEvent.mockResolvedValue(user)
   })
 
   describe('postTokenHandler', () => {
@@ -36,28 +36,20 @@ describe('post-token', () => {
       expect(result).toEqual(expect.objectContaining(status.BAD_REQUEST))
     })
 
-    test('expect BAD_REQUEST when extract token fails', async () => {
-      mocked(events).extractTokenFromEvent.mockImplementationOnce(() => {
-        throw new Error('Bad request')
-      })
-      const result = await postTokenHandler(event)
-      expect(result).toEqual(expect.objectContaining(status.BAD_REQUEST))
-    })
-
-    test('expect INTERNAL_SERVER_ERROR on validateToken reject', async () => {
-      mocked(twitch).validateToken.mockRejectedValueOnce(undefined)
+    test('expect INTERNAL_SERVER_ERROR on getUserFromEvent reject', async () => {
+      mocked(twitch).getUserFromEvent.mockRejectedValueOnce(undefined)
       const result = await postTokenHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
-    test("expect FORBIDDEN on when token doesn't match channel", async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 234242, id: 'not-valid', name: 'whatever' })
+    test("expect FORBIDDEN on when user doesn't match channel", async () => {
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 234242, id: 'not-valid', name: 'whatever' })
       const result = await postTokenHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
     test('expect CREATED when user is mod of channel', async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 93495, id: 'not-valid', name: 'mod1' })
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93495, id: 'not-valid', name: 'mod1' })
       const result = await postTokenHandler(event)
       expect(result).toEqual(expect.objectContaining(status.CREATED))
     })

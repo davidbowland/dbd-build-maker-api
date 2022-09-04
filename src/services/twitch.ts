@@ -1,6 +1,7 @@
+import { APIGatewayProxyEventV2, User } from '../types'
 import { log, xrayCaptureHttps } from '../utils/logging'
-import { User } from '../types'
 import axios from 'axios'
+import { extractTokenFromEvent } from '../utils/events'
 import { twitchClientId } from '../config'
 
 xrayCaptureHttps()
@@ -13,6 +14,8 @@ const auth = axios.create({
 })
 
 const MOD_FETCH_COUNT = 100
+
+/* Twitch API */
 
 // https://dev.twitch.tv/docs/api/reference#get-moderators
 export const getChannelMods = (channelId: string, token: string, pagination?: any): Promise<string[]> =>
@@ -61,3 +64,17 @@ export const validateToken = (token: string): Promise<User | undefined> =>
       }
       throw error
     })
+
+/* Helper functions */
+
+export const getUserFromEvent = async (event: APIGatewayProxyEventV2): Promise<User | undefined> => {
+  if (event.requestContext?.domainPrefix === 'dbd-build-maker-api-internal') {
+    return {
+      expiresIn: 10_000,
+      id: event.headers['x-twitch-id'],
+      name: event.headers['x-twitch-name'],
+    } as User
+  } else {
+    return await validateToken(extractTokenFromEvent(event))
+  }
+}

@@ -1,12 +1,12 @@
 import { applyPatch } from 'fast-json-patch'
 
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Channel, PatchOperation, User } from '../types'
-import { extractJsonPatchFromEvent, extractTokenFromEvent } from '../utils/events'
 import { getChannelById, setChannelById } from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
 import { mutateObjectOnJsonPatch, throwOnInvalidJsonPatch } from '../config'
+import { extractJsonPatchFromEvent } from '../utils/events'
+import { getUserFromEvent } from '../services/twitch'
 import status from '../utils/status'
-import { validateToken } from '../services/twitch'
 
 const applyJsonPatch = async (
   channel: Channel,
@@ -52,7 +52,7 @@ export const patchItemHandler = async (event: APIGatewayProxyEventV2): Promise<A
   log('Received event', { ...event, body: undefined })
   try {
     const channelId = event.pathParameters.channelId
-    const user = await validateToken(extractTokenFromEvent(event))
+    const user = await getUserFromEvent(event)
 
     try {
       const patchOperations = extractJsonPatchFromEvent(event)

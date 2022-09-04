@@ -1,14 +1,37 @@
+import * as events from '@utils/events'
 import { channel, channelId, mods, twitchAuthToken, user } from '../__mocks__'
-import { getChannelInfo, getChannelMods, validateToken } from '@services/twitch'
+import { getChannelInfo, getChannelMods, getUserFromEvent, validateToken } from '@services/twitch'
 import { rest, server } from '@setup-server'
+import { APIGatewayProxyEventV2 } from '@types'
 import { URLSearchParams } from 'url'
+import { mocked } from 'jest-mock'
 import { twitchClientId } from '@config'
 
+jest.mock('@utils/events')
 jest.mock('@utils/logging')
 
 describe('twitch', () => {
   const apiHost = 'https://api.twitch.tv'
   const idHost = 'https://id.twitch.tv'
+  const validateEndpointUser = {
+    expires_in: user.expiresIn,
+    login: user.name,
+    user_id: user.id,
+  }
+  const getValidateEndpoint = jest.fn().mockReturnValue(validateEndpointUser)
+
+  beforeAll(() => {
+    server.use(
+      rest.get(`${idHost}/oauth2/validate`, async (req, res, ctx) => {
+        if (`OAuth ${twitchAuthToken}` !== req.headers.get('Authorization')) {
+          return res(ctx.status(401))
+        }
+
+        const body = getValidateEndpoint()
+        return res(body ? ctx.json(body) : ctx.status(400))
+      })
+    )
+  })
 
   describe('getChannelMods', () => {
     const getModsEndpoint = jest.fn().mockReturnValue({ data: mods, pagination: {} })
@@ -133,26 +156,6 @@ describe('twitch', () => {
   })
 
   describe('validateToken', () => {
-    const validateEndpointUser = {
-      expires_in: user.expiresIn,
-      login: user.name,
-      user_id: user.id,
-    }
-    const getValidateEndpoint = jest.fn().mockReturnValue(validateEndpointUser)
-
-    beforeAll(() => {
-      server.use(
-        rest.get(`${idHost}/oauth2/validate`, async (req, res, ctx) => {
-          if (`OAuth ${twitchAuthToken}` !== req.headers.get('Authorization')) {
-            return res(ctx.status(401))
-          }
-
-          const body = getValidateEndpoint()
-          return res(body ? ctx.json(body) : ctx.status(400))
-        })
-      )
-    })
-
     test('expect validate token endpoint to be called', async () => {
       await validateToken(twitchAuthToken)
       expect(getValidateEndpoint).toHaveBeenCalled()
@@ -171,6 +174,39 @@ describe('twitch', () => {
     test('expect error when endpoint errors', async () => {
       getValidateEndpoint.mockReturnValueOnce(undefined)
       await expect(validateToken(twitchAuthToken)).rejects.toBeDefined()
+    })
+  })
+
+  describe('getUserFromEvent', () => {
+    const eventExternal = {
+      requestContext: {
+        domainPrefix: 'dbd-build-maker-api',
+      },
+    } as unknown as APIGatewayProxyEventV2
+    const eventInternal = {
+      headers: {
+        'x-twitch-id': user.id,
+        'x-twitch-name': user.name,
+      },
+      requestContext: {
+        domainPrefix: 'dbd-build-maker-api-internal',
+      },
+    } as unknown as APIGatewayProxyEventV2
+
+    beforeAll(() => {
+      mocked(events).extractTokenFromEvent.mockReturnValue(twitchAuthToken)
+    })
+
+    test('expect getUserFromEvent returns validateToken result when external', async () => {
+      const result = await getUserFromEvent(eventExternal)
+      expect(result).toEqual(user)
+      expect(getValidateEndpoint).toHaveBeenCalled()
+    })
+
+    test('expect getUserFromEvent returns header values when internal', async () => {
+      const result = await getUserFromEvent(eventInternal)
+      expect(result).toEqual(expect.objectContaining({ id: user.id, name: user.name }))
+      expect(getValidateEndpoint).not.toHaveBeenCalled()
     })
   })
 })

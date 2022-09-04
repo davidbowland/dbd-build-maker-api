@@ -22,7 +22,7 @@ describe('patch-build', () => {
     mocked(dynamodb).getBuildById.mockResolvedValue(buildKiller)
     mocked(dynamodb).getChannelById.mockResolvedValue(channel)
     mocked(events).extractJsonPatchFromEvent.mockImplementation((event) => JSON.parse(event.body))
-    mocked(twitch).validateToken.mockResolvedValue(user)
+    mocked(twitch).getUserFromEvent.mockResolvedValue(user)
   })
 
   describe('patchBuildHandler', () => {
@@ -50,20 +50,20 @@ describe('patch-build', () => {
       expect(result).toEqual(expect.objectContaining({ statusCode: status.BAD_REQUEST.statusCode }))
     })
 
-    test('expect INTERNAL_SERVER_ERROR on validateToken reject', async () => {
-      mocked(twitch).validateToken.mockRejectedValueOnce(undefined)
+    test('expect INTERNAL_SERVER_ERROR on getUserFromEvent reject', async () => {
+      mocked(twitch).getUserFromEvent.mockRejectedValueOnce(undefined)
       const result = await patchBuildHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
-    test("expect FORBIDDEN when token doesn't match channel", async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 1245, id: 'not-valid', name: 'whatever' })
+    test("expect FORBIDDEN when user doesn't match channel", async () => {
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 1245, id: 'not-valid', name: 'whatever' })
       const result = await patchBuildHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
-    test('expect OK when token is mod of channel', async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 8765, id: 'not-valid', name: 'mod1' })
+    test('expect OK when user is mod of channel', async () => {
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 8765, id: 'not-valid', name: 'mod1' })
       const result = await patchBuildHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))
     })

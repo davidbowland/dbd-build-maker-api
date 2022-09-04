@@ -21,24 +21,24 @@ describe('patch-item', () => {
   beforeAll(() => {
     mocked(dynamodb).getChannelById.mockResolvedValue(channel)
     mocked(events).extractJsonPatchFromEvent.mockImplementation((event) => JSON.parse(event.body))
-    mocked(twitch).validateToken.mockResolvedValue(user)
+    mocked(twitch).getUserFromEvent.mockResolvedValue(user)
   })
 
   describe('patchItemHandler', () => {
-    test('expect INTERNAL_SERVER_ERROR on validateToken reject', async () => {
-      mocked(twitch).validateToken.mockRejectedValueOnce(undefined)
+    test('expect INTERNAL_SERVER_ERROR on getUserFromEvent reject', async () => {
+      mocked(twitch).getUserFromEvent.mockRejectedValueOnce(undefined)
       const result = await patchItemHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
-    test('expect FORBIDDEN when validateToken returns undefined', async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce(undefined)
+    test('expect FORBIDDEN when getUserFromEvent returns undefined', async () => {
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce(undefined)
       const result = await patchItemHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
-    test("expect FORBIDDEN when token doesn't match channel", async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 93842, id: 'not-valid', name: 'whatever' })
+    test("expect FORBIDDEN when user doesn't match channel", async () => {
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93842, id: 'not-valid', name: 'whatever' })
       const result = await patchItemHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
@@ -76,7 +76,7 @@ describe('patch-item', () => {
     })
 
     test('expect OK when mod name matches channel', async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce({ expiresIn: 93842, id: 'not-valid', name: 'mod1' })
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93842, id: 'not-valid', name: 'mod1' })
       const result = await patchItemHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))
     })

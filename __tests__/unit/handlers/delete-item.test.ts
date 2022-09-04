@@ -16,18 +16,18 @@ describe('delete-item', () => {
 
   beforeAll(() => {
     mocked(dynamodb).getChannelById.mockResolvedValue(channel)
-    mocked(twitch).validateToken.mockResolvedValue(user)
+    mocked(twitch).getUserFromEvent.mockResolvedValue(user)
   })
 
   describe('deleteByIdHandler', () => {
-    test("expect FORBIDDEN when token doesn't match", async () => {
-      mocked(twitch).validateToken.mockResolvedValueOnce({ ...user, id: 'something-that-does-not-match' })
+    test("expect FORBIDDEN when user doesn't match", async () => {
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ ...user, id: 'something-that-does-not-match' })
       const result = await deleteByIdHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
-    test('expect INTERNAL_SERVER_ERROR on validateToken reject', async () => {
-      mocked(twitch).validateToken.mockRejectedValueOnce(undefined)
+    test('expect INTERNAL_SERVER_ERROR on getUserFromEvent reject', async () => {
+      mocked(twitch).getUserFromEvent.mockRejectedValueOnce(undefined)
       const result = await deleteByIdHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
