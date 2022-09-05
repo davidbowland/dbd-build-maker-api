@@ -67,7 +67,7 @@ describe('patch-item', () => {
       expect(result).toEqual(expect.objectContaining({ statusCode: status.BAD_REQUEST.statusCode }))
     })
 
-    test("expect FORBIDDEN when patch operations don't match /notes", async () => {
+    test("expect FORBIDDEN when patch operations don't match /notes or /disabledOptions", async () => {
       mocked(events).extractJsonPatchFromEvent.mockReturnValueOnce([
         { op: 'add', path: '/fnord' },
       ] as unknown[] as PatchOperation[])

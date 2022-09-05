@@ -8,7 +8,7 @@ import status from '../utils/status'
 const createNewChannel = async (channelId: string, token: string): Promise<APIGatewayProxyResultV2<Channel>> => {
   const channelInfo = await getChannelInfo(channelId, token)
   const mods = await getChannelMods(channelId, token)
-  const channel = { ...channelInfo, mods }
+  const channel = { ...channelInfo, disabledOptions: [], mods }
 
   log('Creating channel', { channel, channelId })
   await setChannelById(channelId, channel)

@@ -24,6 +24,7 @@ export interface BuildBatch {
 }
 
 export interface Channel {
+  disabledOptions: string[]
   mods: string[]
   name: string
   notes?: string

@@ -56,7 +56,7 @@ export const patchItemHandler = async (event: APIGatewayProxyEventV2): Promise<A
 
     try {
       const patchOperations = extractJsonPatchFromEvent(event)
-      if (!patchOperations.every((value) => value.path === '/notes')) {
+      if (!patchOperations.every((value) => value.path === '/notes' || value.path.startsWith('/disabledOptions/'))) {
         return status.FORBIDDEN
       }
 

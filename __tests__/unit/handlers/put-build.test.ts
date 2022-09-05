@@ -2,7 +2,7 @@ import { mocked } from 'jest-mock'
 
 import * as dynamodb from '@services/dynamodb'
 import * as events from '@utils/events'
-import { buildId, buildKiller, channelId, submitter } from '../__mocks__'
+import { buildId, buildKiller, channel, channelId, submitter } from '../__mocks__'
 import { APIGatewayProxyEventV2 } from '@types'
 import eventJson from '@events/put-build.json'
 import { putBuildHandler } from '@handlers/put-build'
@@ -16,6 +16,7 @@ describe('put-build', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
 
   beforeAll(() => {
+    mocked(dynamodb).getChannelById.mockResolvedValue(channel)
     mocked(dynamodb).getTokenById.mockResolvedValue({ submitter })
     mocked(events).extractBuildFromEvent.mockReturnValue(buildKiller)
   })
@@ -25,6 +26,12 @@ describe('put-build', () => {
       mocked(dynamodb).getTokenById.mockRejectedValueOnce(undefined)
       const result = await putBuildHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
+    })
+
+    test('expect INTERNAL_SERVER_ERROR when getChannelById rejects', async () => {
+      mocked(dynamodb).getChannelById.mockRejectedValueOnce(undefined)
+      const result = await putBuildHandler(event)
+      expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
     test('expect BAD_REQUEST when extract build fails', async () => {

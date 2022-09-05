@@ -15,7 +15,7 @@ export const buildKiller: Build = {
 }
 
 export const buildSurvivor: Build = {
-  addon1: 'Battery',
+  addon1: 'Broken Bulb',
   addon2: 'None',
   character: 'Jill Valentine',
   completed: 1661234676238,
@@ -25,7 +25,7 @@ export const buildSurvivor: Build = {
   perk1: 'Buckle Up',
   perk2: 'Rookie Spirit',
   perk3: 'Technician',
-  perk4: 'perk-4',
+  perk4: 'None',
 }
 
 export const buildToken: Token = {
@@ -45,6 +45,7 @@ export const mods = ['mod1', 'mod2']
 
 export const channel: Channel = {
   ...channelInfo,
+  disabledOptions: [],
   mods,
 }
 
