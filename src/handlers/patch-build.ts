@@ -62,6 +62,7 @@ export const patchBuildHandler = async (event: APIGatewayProxyEventV2): Promise<
       } else if (!patchOperations.every((value) => value.path === '/completed')) {
         return status.FORBIDDEN
       }
+      log({ buildId, channelId, patchOperations, user })
       return await patchById(channelId, buildId, patchOperations)
     } catch (error) {
       return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }

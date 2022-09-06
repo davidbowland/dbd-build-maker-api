@@ -59,6 +59,7 @@ export const patchItemHandler = async (event: APIGatewayProxyEventV2): Promise<A
       if (!patchOperations.every((value) => value.path === '/notes' || value.path.startsWith('/disabledOptions/'))) {
         return status.FORBIDDEN
       }
+      log({ channelId, patchOperations, user })
 
       return await patchById(channelId, patchOperations, user)
     } catch (error) {

@@ -28,6 +28,7 @@ export const deleteByIdHandler = async (event: APIGatewayProxyEventV2): Promise<
     if (user?.id !== channelId) {
       return status.FORBIDDEN
     }
+    log({ user })
     return await fetchDataThenDelete(channelId)
   } catch (error) {
     logError(error)

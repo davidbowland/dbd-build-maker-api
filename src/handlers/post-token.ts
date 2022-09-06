@@ -30,6 +30,7 @@ export const postTokenHandler = async (event: APIGatewayProxyEventV2): Promise<A
       if (user === undefined || (user.id !== channelId && channel.mods.indexOf(user.name) < 0)) {
         return status.FORBIDDEN
       }
+      log({ channelId, submitter, user })
 
       return await createNewToken(channelId, submitter)
     } catch (error) {

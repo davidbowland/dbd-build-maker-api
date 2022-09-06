@@ -28,6 +28,7 @@ export const postItemHandler = async (event: APIGatewayProxyEventV2): Promise<AP
       if (user === undefined) {
         return status.FORBIDDEN
       }
+      log({ user })
       return await createNewChannel(user.id, token)
     } catch (error) {
       logError(error)

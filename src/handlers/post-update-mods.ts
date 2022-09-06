@@ -10,6 +10,7 @@ const updateChannelMods = async (channelId: string, token: string): Promise<APIG
     const channel = await getChannelById(channelId)
     try {
       const mods = await getChannelMods(channelId, token)
+      log('Setting mods', { channel, channelId, mods })
       await setChannelById(channelId, { ...channel, mods })
       return status.NO_CONTENT
     } catch (error) {
@@ -27,9 +28,11 @@ export const postUpdateModsHandler = async (event: APIGatewayProxyEventV2): Prom
     const channelId = event.pathParameters.channelId
     const token = extractTokenFromEvent(event)
     const user = await validateToken(token)
-    if (user === undefined || channelId !== user.id) {
+    if (channelId !== user?.id) {
       return status.FORBIDDEN
     }
+    log({ channelId, user })
+
     return await updateChannelMods(channelId, token)
   } catch (error) {
     logError(error)
