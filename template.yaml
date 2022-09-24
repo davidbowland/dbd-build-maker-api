@@ -824,9 +824,12 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
+            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+        - DynamoDBCrudPolicy:
             TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
       Environment:
         Variables:
+          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
           DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
