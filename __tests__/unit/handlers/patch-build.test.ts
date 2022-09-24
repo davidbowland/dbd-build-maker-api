@@ -97,6 +97,11 @@ describe('patch-build', () => {
       )
     })
 
+    test('expect channel counts to be updated', async () => {
+      await patchBuildHandler(event)
+      expect(mocked(dynamodb).updateChannelCounts).toHaveBeenCalledWith(channelId)
+    })
+
     test('expect OK and body when build completed', async () => {
       const result = await patchBuildHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))

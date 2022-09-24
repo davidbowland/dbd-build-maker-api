@@ -1,5 +1,11 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
-import { deleteBuildById, deleteTokenById, scanExpiredBuildIds, scanExpiredTokens } from '../services/dynamodb'
+import {
+  deleteBuildById,
+  deleteTokenById,
+  scanExpiredBuildIds,
+  scanExpiredTokens,
+  updateChannelCounts,
+} from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
 import status from '../utils/status'
 
@@ -9,6 +15,10 @@ export const postStartPruneHandler = async (event: APIGatewayProxyEventV2): Prom
     const ids = await scanExpiredBuildIds()
     for (const build of ids) {
       await deleteBuildById(build.channelId, build.buildId)
+    }
+    const updatedChannels = new Set(ids.map((build) => build.channelId))
+    for (const channelId of updatedChannels) {
+      await updateChannelCounts(channelId)
     }
 
     const buildTokens = await scanExpiredTokens()

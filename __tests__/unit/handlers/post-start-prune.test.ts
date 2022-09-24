@@ -65,6 +65,11 @@ describe('post-start-prune', () => {
       expect(mocked(dynamodb).deleteTokenById).toHaveBeenCalledWith(channelId, buildToken.value)
     })
 
+    test('expect channelId and token passed to updateChannelCounts', async () => {
+      await postStartPruneHandler(event)
+      expect(mocked(dynamodb).updateChannelCounts).toHaveBeenCalledWith(channelId)
+    })
+
     test('expect NO_CONTENT', async () => {
       const result = await postStartPruneHandler(event)
       expect(result).toEqual(status.NO_CONTENT)

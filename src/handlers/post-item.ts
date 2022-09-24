@@ -1,17 +1,18 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Channel } from '../types'
 import { getChannelInfo, getChannelMods, validateToken } from '../services/twitch'
 import { log, logError } from '../utils/logging'
+import { setChannelById, updateChannelCounts } from '../services/dynamodb'
 import { extractTokenFromEvent } from '../utils/events'
-import { setChannelById } from '../services/dynamodb'
 import status from '../utils/status'
 
 const createNewChannel = async (channelId: string, token: string): Promise<APIGatewayProxyResultV2<Channel>> => {
   const channelInfo = await getChannelInfo(channelId, token)
   const mods = await getChannelMods(channelId, token)
-  const channel = { ...channelInfo, disabledOptions: [], mods }
+  const channel = { ...channelInfo, counts: { completed: 0, pending: 0 }, disabledOptions: [], mods }
 
   log('Creating channel', { channel, channelId })
   await setChannelById(channelId, channel)
+  await updateChannelCounts(channelId)
 
   return {
     ...status.CREATED,

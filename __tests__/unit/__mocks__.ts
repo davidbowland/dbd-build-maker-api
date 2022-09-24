@@ -48,6 +48,7 @@ export const mods: ChannelMod[] = [
 
 export const channel: Channel = {
   ...channelInfo,
+  counts: { completed: 0, pending: 0 },
   disabledOptions: [],
   mods,
 }

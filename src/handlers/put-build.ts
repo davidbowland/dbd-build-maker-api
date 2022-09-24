@@ -1,5 +1,5 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Build } from '../types'
-import { deleteTokenById, getChannelById, getTokenById, setBuildById } from '../services/dynamodb'
+import { deleteTokenById, getChannelById, getTokenById, setBuildById, updateChannelCounts } from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
 import { extractBuildFromEvent } from '../utils/events'
 import status from '../utils/status'
@@ -13,6 +13,7 @@ const confirmBuild = async (
     log('Setting build and deleting token', { build, buildId, channelId })
     await setBuildById(channelId, buildId, build)
     await deleteTokenById(channelId, buildId)
+    await updateChannelCounts(channelId)
     return { ...status.OK, body: JSON.stringify(build) }
   } catch (error) {
     logError(error)

@@ -1,4 +1,4 @@
-import { buildId, buildKiller, buildToken, channel, channelId, submitter } from '../__mocks__'
+import { buildId, buildKiller, buildSurvivor, buildToken, channel, channelId, submitter } from '../__mocks__'
 import {
   deleteBuildById,
   deleteChannelById,
@@ -13,6 +13,7 @@ import {
   setBuildById,
   setChannelById,
   setTokenById,
+  updateChannelCounts,
 } from '@services/dynamodb'
 
 const mockDeleteItem = jest.fn()
@@ -333,6 +334,41 @@ describe('dynamodb', () => {
         },
         TableName: 'token-table',
       })
+    })
+  })
+
+  describe('updateChannelCounts', () => {
+    beforeAll(() => {
+      mockGetItem.mockResolvedValue({ Item: { Data: { S: JSON.stringify(channel) } } })
+      mockQueryTable.mockResolvedValue({
+        Items: [
+          { BuildId: { S: `${buildId}` }, ChannelId: { S: `${channelId}` }, Data: { S: JSON.stringify(buildKiller) } },
+          {
+            BuildId: { S: 'tfvdertyujmytf' },
+            ChannelId: { S: `${channelId}` },
+            Data: { S: JSON.stringify(buildSurvivor) },
+          },
+        ],
+      })
+    })
+
+    test('expect channel counts recalculated', async () => {
+      const counts = { completed: 1, pending: 1 }
+      const channelUpdatedCounts = { ...channel, counts }
+      const result = await updateChannelCounts(channelId)
+
+      expect(mockPutItem).toHaveBeenCalledWith({
+        Item: {
+          ChannelId: {
+            S: `${channelId}`,
+          },
+          Data: {
+            S: JSON.stringify(channelUpdatedCounts),
+          },
+        },
+        TableName: 'channel-table',
+      })
+      expect(result).toEqual(counts)
     })
   })
 })

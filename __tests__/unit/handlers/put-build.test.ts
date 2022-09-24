@@ -47,6 +47,11 @@ describe('put-build', () => {
       expect(mocked(dynamodb).setBuildById).toHaveBeenCalledWith(channelId, buildId, { ...buildKiller, submitter })
     })
 
+    test('expect channel counts to be updated', async () => {
+      await putBuildHandler(event)
+      expect(mocked(dynamodb).updateChannelCounts).toHaveBeenCalledWith(channelId)
+    })
+
     test('expect INTERNAL_SERVER_ERROR on setBuildById reject', async () => {
       mocked(dynamodb).setBuildById.mockRejectedValueOnce(undefined)
       const result = await putBuildHandler(event)

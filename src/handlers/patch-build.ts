@@ -7,7 +7,7 @@ import {
   mutateObjectOnJsonPatch,
   throwOnInvalidJsonPatch,
 } from '../config'
-import { getBuildById, getChannelById, setBuildById } from '../services/dynamodb'
+import { getBuildById, getChannelById, setBuildById, updateChannelCounts } from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
 import { extractJsonPatchFromEvent } from '../utils/events'
 import { getUserFromEvent } from '../services/twitch'
@@ -24,6 +24,7 @@ const applyJsonPatch = async (
   const updatedBuild = { ...patchedBuild, expiration: new Date().getTime() + expirationDuration }
   try {
     await setBuildById(channelId, buildId, updatedBuild)
+    await updateChannelCounts(channelId)
     return { ...status.OK, body: JSON.stringify({ ...updatedBuild, buildId, channelId }) }
   } catch (error) {
     logError(error)

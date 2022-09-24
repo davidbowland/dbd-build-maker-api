@@ -62,6 +62,11 @@ describe('post-item', () => {
       expect(mocked(dynamodb).setChannelById).toHaveBeenCalledWith(channelId, expect.objectContaining(channel))
     })
 
+    test('expect channel passed to updateChannelCounts', async () => {
+      await postItemHandler(event)
+      expect(mocked(dynamodb).updateChannelCounts).toHaveBeenCalledWith(channelId)
+    })
+
     test('expect INTERNAL_SERVER_ERROR on setChannelById reject', async () => {
       mocked(dynamodb).setChannelById.mockRejectedValueOnce(undefined)
       const result = await postItemHandler(event)

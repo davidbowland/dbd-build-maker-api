@@ -1,6 +1,6 @@
 import { DynamoDB } from 'aws-sdk'
 
-import { Build, BuildBatch, Channel, ChannelBatch } from '../types'
+import { Build, BuildBatch, Channel, ChannelBatch, ChannelCounts } from '../types'
 import { dynamodbBuildTableName, dynamodbChannelTableName, dynamodbTokenTableName } from '../config'
 import { xrayCapture } from '../utils/logging'
 
@@ -235,3 +235,23 @@ export const setTokenById = (
       TableName: dynamodbTokenTableName,
     })
     .promise()
+
+/* Update counts */
+
+export const updateChannelCounts = async (channelId: string): Promise<ChannelCounts> => {
+  const builds = await queryBuildsByChannelId(channelId)
+  const counts = builds.reduce(
+    (previous, current) => {
+      if (current.data.completed) {
+        return { ...previous, completed: previous.completed + 1 }
+      }
+      return { ...previous, pending: previous.pending + 1 }
+    },
+    { completed: 0, pending: 0 } as ChannelCounts
+  )
+
+  const channel = await getChannelById(channelId)
+  await setChannelById(channelId, { ...channel, counts })
+
+  return counts
+}
