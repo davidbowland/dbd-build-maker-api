@@ -1,4 +1,4 @@
-import { Build, BuildBatch, Channel, ChannelBatch, PatchOperation, Token, User } from '@types'
+import { Build, BuildBatch, Channel, ChannelBatch, ChannelMod, PatchOperation, Token, User } from '@types'
 
 export const buildId = 'ytrfghjklkmnbvfty'
 
@@ -41,7 +41,10 @@ export const channelInfo = {
   pic: 'https://twitch.com/logo.png',
 }
 
-export const mods = ['mod1', 'mod2']
+export const mods: ChannelMod[] = [
+  { user_id: '269300532', user_login: 'mod1', user_name: 'mod1' },
+  { user_id: '269300533', user_login: 'mod2', user_name: 'mod2' },
+]
 
 export const channel: Channel = {
   ...channelInfo,

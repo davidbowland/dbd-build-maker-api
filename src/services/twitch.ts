@@ -1,4 +1,4 @@
-import { APIGatewayProxyEventV2, User } from '../types'
+import { APIGatewayProxyEventV2, ChannelMod, User } from '../types'
 import { log, xrayCaptureHttps } from '../utils/logging'
 import axios from 'axios'
 import { extractTokenFromEvent } from '../utils/events'
@@ -18,7 +18,7 @@ const MOD_FETCH_COUNT = 100
 /* Twitch API */
 
 // https://dev.twitch.tv/docs/api/reference#get-moderators
-export const getChannelMods = (channelId: string, token: string, pagination?: any): Promise<string[]> =>
+export const getChannelMods = (channelId: string, token: string, pagination?: any): Promise<ChannelMod[]> =>
   api
     .get('/helix/moderation/moderators', {
       headers: { Authorization: `Bearer ${token}`, 'Client-ID': twitchClientId },

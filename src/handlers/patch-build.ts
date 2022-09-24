@@ -57,7 +57,7 @@ export const patchBuildHandler = async (event: APIGatewayProxyEventV2): Promise<
     const user = await getUserFromEvent(event)
     try {
       const patchOperations = extractJsonPatchFromEvent(event)
-      if (user === undefined || (channelId !== user.id && channel.mods.indexOf(user.name) < 0)) {
+      if (user === undefined || (channelId !== user.id && channel.mods.every((m) => m.user_id !== user.id))) {
         return status.FORBIDDEN
       } else if (!patchOperations.every((value) => value.path === '/completed')) {
         return status.FORBIDDEN

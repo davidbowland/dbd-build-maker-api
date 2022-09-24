@@ -76,7 +76,7 @@ describe('patch-item', () => {
     })
 
     test('expect OK when mod name matches channel', async () => {
-      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93842, id: 'not-valid', name: 'mod1' })
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93842, id: '269300532', name: 'mod1' })
       const result = await patchItemHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))
     })

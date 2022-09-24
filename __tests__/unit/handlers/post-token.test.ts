@@ -49,7 +49,7 @@ describe('post-token', () => {
     })
 
     test('expect CREATED when user is mod of channel', async () => {
-      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93495, id: 'not-valid', name: 'mod1' })
+      mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93495, id: '269300532', name: 'mod1' })
       const result = await postTokenHandler(event)
       expect(result).toEqual(expect.objectContaining(status.CREATED))
     })

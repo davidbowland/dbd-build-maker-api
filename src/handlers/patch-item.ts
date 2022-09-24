@@ -35,7 +35,7 @@ const patchById = async (
 ): Promise<APIGatewayProxyResultV2<Channel>> => {
   try {
     const channel = await getChannelById(channelId)
-    if (user === undefined || (user.id !== channelId && channel.mods.indexOf(user.name) < 0)) {
+    if (user === undefined || (user.id !== channelId && channel.mods.every((m) => m.user_id !== user.id))) {
       return status.FORBIDDEN
     }
     try {
