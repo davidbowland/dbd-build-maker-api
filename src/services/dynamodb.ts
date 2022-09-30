@@ -238,7 +238,7 @@ export const setTokenById = (
 
 /* Update counts */
 
-export const updateChannelCounts = async (channelId: string): Promise<ChannelCounts> => {
+export const updateChannelCounts = async (channelId: string, updateLastModified = true): Promise<ChannelCounts> => {
   const builds = await queryBuildsByChannelId(channelId)
   const counts = builds.reduce(
     (previous, current) => {
@@ -251,7 +251,11 @@ export const updateChannelCounts = async (channelId: string): Promise<ChannelCou
   )
 
   const channel = await getChannelById(channelId)
-  await setChannelById(channelId, { ...channel, counts })
+  await setChannelById(channelId, {
+    ...channel,
+    counts,
+    lastModified: updateLastModified ? new Date().getTime() : channel.lastModified,
+  })
 
   return counts
 }

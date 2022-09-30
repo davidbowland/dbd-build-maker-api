@@ -18,7 +18,7 @@ export const postStartPruneHandler = async (event: APIGatewayProxyEventV2): Prom
     }
     const updatedChannels = new Set(ids.map((build) => build.channelId))
     for (const channelId of updatedChannels) {
-      await updateChannelCounts(channelId)
+      await updateChannelCounts(channelId, false)
     }
 
     const buildTokens = await scanExpiredTokens()

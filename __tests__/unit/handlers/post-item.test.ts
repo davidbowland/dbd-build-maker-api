@@ -15,6 +15,7 @@ jest.mock('@utils/events')
 jest.mock('@utils/logging')
 
 describe('post-item', () => {
+  const { lastModified: _, ...channelNoModified } = channel
   const event = eventJson as unknown as APIGatewayProxyEventV2
 
   beforeAll(() => {
@@ -59,7 +60,10 @@ describe('post-item', () => {
 
     test('expect channel passed to setChannelById', async () => {
       await postItemHandler(event)
-      expect(mocked(dynamodb).setChannelById).toHaveBeenCalledWith(channelId, expect.objectContaining(channel))
+      expect(mocked(dynamodb).setChannelById).toHaveBeenCalledWith(
+        channelId,
+        expect.objectContaining(channelNoModified)
+      )
     })
 
     test('expect channel passed to updateChannelCounts', async () => {
@@ -75,10 +79,11 @@ describe('post-item', () => {
 
     test('expect CREATED and body', async () => {
       const result = await postItemHandler(event)
+
       expect(result).toEqual(expect.objectContaining(status.CREATED))
       expect(JSON.parse(result.body)).toEqual(
         expect.objectContaining({
-          ...channel,
+          ...channelNoModified,
           channelId,
         })
       )

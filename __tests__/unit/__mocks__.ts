@@ -50,6 +50,7 @@ export const channel: Channel = {
   ...channelInfo,
   counts: { completed: 0, pending: 0 },
   disabledOptions: [],
+  lastModified: 1659106748591,
   mods,
 }
 

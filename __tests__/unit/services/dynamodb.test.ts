@@ -353,9 +353,27 @@ describe('dynamodb', () => {
     })
 
     test('expect channel counts recalculated', async () => {
+      const mockPutItemParts = jest.fn()
+      mockPutItem.mockImplementationOnce((value) =>
+        mockPutItemParts(value.Item.ChannelId.S, JSON.parse(value.Item.Data.S), value.TableName)
+      )
+
+      const counts = { completed: 1, pending: 1 }
+      const { lastModified: _, ...channelUpdatedCounts } = { ...channel, counts }
+      const result = await updateChannelCounts(channelId)
+
+      expect(mockPutItemParts).toHaveBeenCalledWith(
+        channelId,
+        expect.objectContaining(channelUpdatedCounts),
+        'channel-table'
+      )
+      expect(result).toEqual(counts)
+    })
+
+    test('expect last modified not updated', async () => {
       const counts = { completed: 1, pending: 1 }
       const channelUpdatedCounts = { ...channel, counts }
-      const result = await updateChannelCounts(channelId)
+      const result = await updateChannelCounts(channelId, false)
 
       expect(mockPutItem).toHaveBeenCalledWith({
         Item: {

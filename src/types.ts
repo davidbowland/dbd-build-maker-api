@@ -37,6 +37,7 @@ export interface ChannelMod {
 export interface Channel {
   counts: ChannelCounts
   disabledOptions: string[]
+  lastModified: number
   mods: ChannelMod[]
   name: string
   notes?: string
