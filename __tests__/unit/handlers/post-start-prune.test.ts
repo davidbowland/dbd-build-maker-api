@@ -1,7 +1,7 @@
 import { mocked } from 'jest-mock'
 
 import * as dynamodb from '@services/dynamodb'
-import { buildId, buildToken, channelId } from '../__mocks__'
+import { buildId, buildToken, channel, channelBatch, channelId } from '../__mocks__'
 import { APIGatewayProxyEventV2 } from '@types'
 import eventJson from '@events/post-start-prune.json'
 import { postStartPruneHandler } from '@handlers/post-start-prune'
@@ -16,6 +16,7 @@ describe('post-start-prune', () => {
   beforeAll(() => {
     mocked(dynamodb).deleteBuildById.mockResolvedValue(undefined)
     mocked(dynamodb).deleteTokenById.mockResolvedValue(undefined)
+    mocked(dynamodb).scanChannels.mockResolvedValue(channelBatch)
     mocked(dynamodb).scanExpiredBuildIds.mockResolvedValue([
       {
         buildId,
@@ -68,6 +69,20 @@ describe('post-start-prune', () => {
     test('expect channelId and token passed to updateChannelCounts', async () => {
       await postStartPruneHandler(event)
       expect(mocked(dynamodb).updateChannelCounts).toHaveBeenCalledWith(channelId, false)
+    })
+
+    test('expect expired channels deleted', async () => {
+      const deletedChannelId = '123456'
+      const keptChannelId = '098765'
+      const returnedChannels = [
+        { data: { ...channel, lastModified: 1000 }, id: deletedChannelId },
+        { data: { ...channel, lastModified: new Date().getTime() }, id: keptChannelId },
+      ]
+      mocked(dynamodb).scanChannels.mockResolvedValueOnce(returnedChannels)
+      await postStartPruneHandler(event)
+
+      expect(mocked(dynamodb).deleteChannelById).toHaveBeenCalledWith(deletedChannelId)
+      expect(mocked(dynamodb).deleteChannelById).toHaveBeenCalledTimes(1)
     })
 
     test('expect NO_CONTENT', async () => {

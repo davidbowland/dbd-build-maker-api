@@ -1,12 +1,15 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import {
   deleteBuildById,
+  deleteChannelById,
   deleteTokenById,
+  scanChannels,
   scanExpiredBuildIds,
   scanExpiredTokens,
   updateChannelCounts,
 } from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
+import { channelExpireDuration } from '../config'
 import status from '../utils/status'
 
 export const postStartPruneHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
@@ -24,6 +27,14 @@ export const postStartPruneHandler = async (event: APIGatewayProxyEventV2): Prom
     const buildTokens = await scanExpiredTokens()
     for (const token of buildTokens) {
       await deleteTokenById(token.channelId, token.token)
+    }
+
+    const allChannels = await scanChannels()
+    const currentTime = new Date().getTime()
+    for (const channel of allChannels) {
+      if (channel.data.lastModified + channelExpireDuration <= currentTime) {
+        await deleteChannelById(channel.id)
+      }
     }
 
     return status.NO_CONTENT

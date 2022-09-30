@@ -13,6 +13,11 @@ export const buildCompletedExpireDuration = parseInt(process.env.BUILD_COMPLETED
 export const buildUncompletedExpireDuration =
   parseInt(process.env.BUILD_UNCOMPLETED_EXPIRE_DAYS as string, 10) * 86_400_000
 
+// Channels
+
+// 24 hours * 60 minutes * 60 seconds * 1000 milliseconds = 86_400_000
+export const channelExpireDuration = parseInt(process.env.CHANNEL_EXPIRE_DAYS as string, 10) * 86_400_000
+
 // DynamoDB
 
 export const dynamodbBuildTableName = process.env.DYNAMODB_BUILD_TABLE_NAME as string

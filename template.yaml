@@ -969,6 +969,7 @@ Resources:
             TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
       Environment:
         Variables:
+          CHANNEL_EXPIRE_DAYS: 90
           DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
           DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
           DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
