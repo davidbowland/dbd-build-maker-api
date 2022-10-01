@@ -692,7 +692,7 @@ Resources:
       Environment:
         Variables:
           BUILD_COMPLETED_EXPIRE_HOURS: 6
-          BUILD_UNCOMPLETED_EXPIRE_DAYS: 15
+          BUILD_UNCOMPLETED_EXPIRE_DAYS: 30
           DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
           DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
           TWITCH_CLIENT_ID: !Ref TwitchClientId
@@ -761,7 +761,7 @@ Resources:
             TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
       Environment:
         Variables:
-          BUILD_UNCOMPLETED_EXPIRE_DAYS: 15
+          BUILD_UNCOMPLETED_EXPIRE_DAYS: 30
           DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
           DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
           DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
@@ -969,7 +969,7 @@ Resources:
             TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
       Environment:
         Variables:
-          CHANNEL_EXPIRE_DAYS: 90
+          CHANNEL_EXPIRE_DAYS: 180
           DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
           DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
           DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]

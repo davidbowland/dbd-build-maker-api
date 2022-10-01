@@ -1,11 +1,11 @@
 // Builds
 
 process.env.BUILD_COMPLETED_EXPIRE_HOURS = '6'
-process.env.BUILD_UNCOMPLETED_EXPIRE_DAYS = '15'
+process.env.BUILD_UNCOMPLETED_EXPIRE_DAYS = '30'
 
 // Channels
 
-process.env.CHANNEL_EXPIRE_DAYS = '90'
+process.env.CHANNEL_EXPIRE_DAYS = '180'
 
 // DynamoDB
 
