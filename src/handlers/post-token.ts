@@ -7,7 +7,7 @@ import { getNextToken } from '../utils/token-generator'
 import { getUserFromEvent } from '../services/twitch'
 import status from '../utils/status'
 
-const createNewToken = async (channelId: string, submitter): Promise<APIGatewayProxyResultV2<Token>> => {
+const createNewToken = async (channelId: string, submitter: string): Promise<APIGatewayProxyResultV2<Token>> => {
   const buildToken = await getNextToken(channelId)
 
   log('Creating token', { buildToken, channelId })
@@ -22,7 +22,7 @@ const createNewToken = async (channelId: string, submitter): Promise<APIGatewayP
 export const postTokenHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
   try {
-    const channelId = event.pathParameters.channelId
+    const channelId = event.pathParameters?.channelId as string
     const submitter = extractSubmitterFromEvent(event)
     try {
       const channel = await getChannelById(channelId)
@@ -38,7 +38,7 @@ export const postTokenHandler = async (event: APIGatewayProxyEventV2): Promise<A
       logError(error)
       return status.INTERNAL_SERVER_ERROR
     }
-  } catch (error) {
+  } catch (error: any) {
     return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
   }
 }

@@ -66,7 +66,7 @@ export const getBuildById = (channelId: string, buildId: string): Promise<Build>
       TableName: dynamodbBuildTableName,
     })
     .promise()
-    .then((response) => JSON.parse(response.Item.Data.S))
+    .then((response: any) => JSON.parse(response.Item.Data.S as string))
 
 export const getChannelById = (channelId: string): Promise<Channel> =>
   dynamodb
@@ -79,7 +79,7 @@ export const getChannelById = (channelId: string): Promise<Channel> =>
       TableName: dynamodbChannelTableName,
     })
     .promise()
-    .then((response) => JSON.parse(response.Item.Data.S))
+    .then((response: any) => JSON.parse(response.Item.Data.S as string))
 
 export const getTokenById = (channelId: string, token: string): Promise<{ submitter: string }> =>
   dynamodb
@@ -95,16 +95,16 @@ export const getTokenById = (channelId: string, token: string): Promise<{ submit
       TableName: dynamodbTokenTableName,
     })
     .promise()
-    .then((response) => ({ submitter: response.Item.Submitter.S }))
+    .then((response: any) => ({ submitter: response.Item.Submitter.S }))
 
 /* Query builds by channel */
 
 const getItemsFromBuildQuery = (response: DynamoDB.Types.ScanOutput): BuildBatch[] =>
-  response.Items.map((item) => ({
-    channelId: item.ChannelId.S,
-    data: JSON.parse(item.Data.S),
-    id: item.BuildId.S,
-  }))
+  response.Items?.map((item) => ({
+    channelId: item.ChannelId.S as string,
+    data: JSON.parse(item.Data.S as string),
+    id: item.BuildId.S as string,
+  })) as BuildBatch[]
 
 export const queryBuildsByChannelId = (channelId: string): Promise<BuildBatch[]> =>
   dynamodb
@@ -118,12 +118,15 @@ export const queryBuildsByChannelId = (channelId: string): Promise<BuildBatch[]>
       TableName: dynamodbBuildTableName,
     })
     .promise()
-    .then((response) => getItemsFromBuildQuery(response))
+    .then((response: any) => getItemsFromBuildQuery(response))
 
 /* Scan for all items */
 
 const getChannelsFromScan = (response: DynamoDB.Types.ScanOutput): ChannelBatch[] =>
-  response.Items.map((item) => ({ data: JSON.parse(item.Data.S), id: item.ChannelId.S }))
+  response.Items?.map((item) => ({
+    data: JSON.parse(item.Data.S as string),
+    id: item.ChannelId.S as string,
+  })) as ChannelBatch[]
 
 export const scanChannels = (): Promise<ChannelBatch[]> =>
   dynamodb
@@ -132,7 +135,7 @@ export const scanChannels = (): Promise<ChannelBatch[]> =>
       TableName: dynamodbChannelTableName,
     })
     .promise()
-    .then((response) => getChannelsFromScan(response))
+    .then((response: any) => getChannelsFromScan(response))
 
 /* Scan for expired items */
 
@@ -152,7 +155,9 @@ export const scanExpiredBuildIds = (): Promise<{ buildId: string; channelId: str
       TableName: dynamodbBuildTableName,
     })
     .promise()
-    .then((response) => response.Items.map((item) => ({ buildId: item.BuildId.S, channelId: item.ChannelId.S })))
+    .then((response: any) =>
+      response.Items.map((item: any) => ({ buildId: item.BuildId.S, channelId: item.ChannelId.S }))
+    )
 
 export const scanExpiredTokens = (): Promise<{ channelId: string; token: string }[]> =>
   dynamodb
@@ -170,7 +175,7 @@ export const scanExpiredTokens = (): Promise<{ channelId: string; token: string 
       TableName: dynamodbTokenTableName,
     })
     .promise()
-    .then((response) => response.Items.map((item) => ({ channelId: item.ChannelId.S, token: item.Token.S })))
+    .then((response: any) => response.Items.map((item: any) => ({ channelId: item.ChannelId.S, token: item.Token.S })))
 
 /* Set item */
 

@@ -3,7 +3,7 @@ import { log, logError } from '../utils/logging'
 import { getUserFromEvent } from '../services/twitch'
 import status from '../utils/status'
 
-const generateResult = (user: User): TwitchTokenStatus => {
+const generateResult = (user?: User): TwitchTokenStatus => {
   if (user === undefined) {
     return {
       status: 'invalid',

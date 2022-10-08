@@ -23,7 +23,7 @@ const fetchDataThenDelete = async (channelId: string): Promise<APIGatewayProxyRe
 export const deleteByIdHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<Channel>> => {
   log('Received event', { ...event, body: undefined })
   try {
-    const channelId = event.pathParameters.channelId
+    const channelId = event.pathParameters?.channelId as string
     const user = await getUserFromEvent(event)
     if (user?.id !== channelId) {
       return status.FORBIDDEN

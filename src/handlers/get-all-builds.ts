@@ -8,7 +8,7 @@ export const getAllBuildsHandler = async (
 ): Promise<APIGatewayProxyResultV2<ChannelBatch[]>> => {
   log('Received event', event)
   try {
-    const channelId = event.pathParameters.channelId
+    const channelId = event.pathParameters?.channelId as string
     const data = await queryBuildsByChannelId(channelId)
     return { ...status.OK, body: JSON.stringify(data) }
   } catch (error) {

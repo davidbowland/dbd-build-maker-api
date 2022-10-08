@@ -41,7 +41,7 @@ const patchById = async (
     const build = await getBuildById(channelId, buildId)
     try {
       return await applyJsonPatch(build, channelId, buildId, patchOperations)
-    } catch (error) {
+    } catch (error: any) {
       return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
     }
   } catch {
@@ -52,8 +52,8 @@ const patchById = async (
 export const patchBuildHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
   try {
-    const buildId = event.pathParameters.buildId
-    const channelId = event.pathParameters.channelId
+    const buildId = event.pathParameters?.buildId as string
+    const channelId = event.pathParameters?.channelId as string
     const channel = await getChannelById(channelId)
     const user = await getUserFromEvent(event)
     try {
@@ -65,7 +65,7 @@ export const patchBuildHandler = async (event: APIGatewayProxyEventV2): Promise<
       }
       log({ buildId, channelId, patchOperations, user })
       return await patchById(channelId, buildId, patchOperations)
-    } catch (error) {
+    } catch (error: any) {
       return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
     }
   } catch (error) {

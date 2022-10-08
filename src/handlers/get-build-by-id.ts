@@ -5,8 +5,8 @@ import status from '../utils/status'
 
 export const getBuildByIdHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<Build>> => {
   log('Received event', { ...event, body: undefined })
-  const channelId = event.pathParameters.channelId
-  const buildId = event.pathParameters.buildId
+  const buildId = event.pathParameters?.buildId as string
+  const channelId = event.pathParameters?.channelId as string
   try {
     const result = await getBuildById(channelId, buildId)
     return { ...status.OK, body: JSON.stringify(result) }

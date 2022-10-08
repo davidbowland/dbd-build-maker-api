@@ -37,4 +37,4 @@ export const tokenMaxLength = parseInt(process.env.TOKEN_MAX_LENGTH as string, 1
 
 // Twitch
 
-export const twitchClientId = process.env.TWITCH_CLIENT_ID
+export const twitchClientId = process.env.TWITCH_CLIENT_ID as string

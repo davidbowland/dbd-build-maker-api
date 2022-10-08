@@ -25,7 +25,7 @@ const updateChannelMods = async (channelId: string, token: string): Promise<APIG
 export const postUpdateModsHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
   try {
-    const channelId = event.pathParameters.channelId
+    const channelId = event.pathParameters?.channelId as string
     const token = extractTokenFromEvent(event)
     const user = await validateToken(token)
     if (channelId !== user?.id) {

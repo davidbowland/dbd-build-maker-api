@@ -13,7 +13,7 @@ export const formatBuild = (build: Build, disabledOptions: string[]): Build => {
     throw new Error('"character" has an invalid value')
   }
   if (isKiller) {
-    const killer = buildOptions.Killers[build.character]
+    const killer = buildOptions.Killers[build.character as keyof typeof buildOptions.Killers]
     if (disabledOptions.indexOf(build.addon1) !== -1 || killer.indexOf(build.addon1) < 0) {
       throw new Error('"addon1" has an invalid value')
     }
@@ -46,8 +46,8 @@ export const formatBuild = (build: Build, disabledOptions: string[]): Build => {
     ) {
       throw new Error('"item" has an invalid value')
     }
-    if (build.item !== 'None') {
-      const item = buildOptions['Survivor Items'][build.item]
+    if (build.item && build.item !== 'None') {
+      const item = buildOptions['Survivor Items'][build.item as keyof typeof buildOptions['Survivor Items']]
       if (disabledOptions.indexOf(build.addon1) !== -1 || item.indexOf(build.addon1) < 0) {
         throw new Error('"addon1" has an invalid value')
       }
@@ -115,4 +115,5 @@ export const extractJsonPatchFromEvent = (event: APIGatewayProxyEventV2): PatchO
 
 export const extractSubmitterFromEvent = (event: APIGatewayProxyEventV2): string => parseEventBody(event).submitter
 
-export const extractTokenFromEvent = (event: APIGatewayProxyEventV2): string => event.headers['x-twitch-token']
+export const extractTokenFromEvent = (event: APIGatewayProxyEventV2): string =>
+  event.headers['x-twitch-token'] as string
