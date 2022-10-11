@@ -125,10 +125,10 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
       Environment:
         Variables:
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -188,10 +188,10 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
       Environment:
         Variables:
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -251,10 +251,10 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+            TableName: !Ref BuildTable
       Environment:
         Variables:
-          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          DYNAMODB_BUILD_TABLE_NAME: !Ref BuildTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -314,10 +314,10 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
       Environment:
         Variables:
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -377,10 +377,10 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+            TableName: !Ref BuildTable
       Environment:
         Variables:
-          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+          DYNAMODB_BUILD_TABLE_NAME: !Ref BuildTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -500,10 +500,10 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+            TableName: !Ref TokenTable
       Environment:
         Variables:
-          DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+          DYNAMODB_TOKEN_TABLE_NAME: !Ref TokenTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -623,10 +623,10 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
       Environment:
         Variables:
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -686,15 +686,15 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+            TableName: !Ref BuildTable
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
       Environment:
         Variables:
           BUILD_COMPLETED_EXPIRE_HOURS: 6
           BUILD_UNCOMPLETED_EXPIRE_DAYS: 30
-          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          DYNAMODB_BUILD_TABLE_NAME: !Ref BuildTable
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -754,17 +754,17 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+            TableName: !Ref BuildTable
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+            TableName: !Ref TokenTable
       Environment:
         Variables:
           BUILD_UNCOMPLETED_EXPIRE_DAYS: 30
-          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
-          DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+          DYNAMODB_BUILD_TABLE_NAME: !Ref BuildTable
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
+          DYNAMODB_TOKEN_TABLE_NAME: !Ref TokenTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -824,13 +824,13 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+            TableName: !Ref BuildTable
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
       Environment:
         Variables:
-          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          DYNAMODB_BUILD_TABLE_NAME: !Ref BuildTable
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -890,16 +890,16 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+            TableName: !Ref BuildTable
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+            TableName: !Ref TokenTable
       Environment:
         Variables:
-          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
-          DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+          DYNAMODB_BUILD_TABLE_NAME: !Ref BuildTable
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
+          DYNAMODB_TOKEN_TABLE_NAME: !Ref TokenTable
           TOKEN_EXPIRE_HOURS: 24
           TOKEN_MIN_LENGTH: 3
           TOKEN_MAX_LENGTH: 12
@@ -962,17 +962,17 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
+            TableName: !Ref BuildTable
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+            TableName: !Ref TokenTable
       Environment:
         Variables:
           CHANNEL_EXPIRE_DAYS: 180
-          DYNAMODB_BUILD_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, buildTable]
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
-          DYNAMODB_TOKEN_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, tokenTable]
+          DYNAMODB_BUILD_TABLE_NAME: !Ref BuildTable
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
+          DYNAMODB_TOKEN_TABLE_NAME: !Ref TokenTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
@@ -1026,10 +1026,10 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+            TableName: !Ref ChannelTable
       Environment:
         Variables:
-          DYNAMODB_CHANNEL_TABLE_NAME: !FindInMap [EnvironmentMap, !Ref Environment, channelTable]
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
           TWITCH_CLIENT_ID: !Ref TwitchClientId
       Events:
         ApiKey:
