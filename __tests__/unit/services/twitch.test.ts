@@ -64,15 +64,15 @@ describe('twitch', () => {
 
     test('expect mods endpoint paginates', async () => {
       const newMods = ['newMod1']
-      const pagination = { hello: 'world' }
+      const pagination = '65r4tyuiolkjhbvdertyu'
       getModsEndpoint.mockReturnValueOnce({ data: newMods, pagination })
 
       const result = await getChannelMods(channelId, twitchAuthToken)
       expect(result).toEqual([...newMods, ...mods])
-      expect(getModsEndpoint).toHaveBeenCalledWith(
-        new URLSearchParams({ after: JSON.stringify(pagination), broadcaster_id: '123456', first: '100' })
-      )
       expect(getModsEndpoint).toHaveBeenCalledWith(new URLSearchParams({ broadcaster_id: '123456', first: '100' }))
+      expect(getModsEndpoint).toHaveBeenCalledWith(
+        new URLSearchParams({ after: pagination, broadcaster_id: '123456', first: '100' })
+      )
     })
 
     test('expect error on invalid token', async () => {
