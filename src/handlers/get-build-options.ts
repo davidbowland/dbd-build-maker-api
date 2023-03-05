@@ -10,6 +10,6 @@ export const getBuildOptionsHandler = async (event: APIGatewayProxyEventV2): Pro
 
 /*
 Scrape code for generating build options:
+// Addons
 Array.from(temp0.querySelectorAll('tr')).map((el) => el.querySelector('th ~ th').innerText).join(',')
-Array.from(document.querySelectorAll('section > p')).map((el) => el.innerText).join(',')
 */
