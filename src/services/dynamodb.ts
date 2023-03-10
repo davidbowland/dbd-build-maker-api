@@ -1,4 +1,14 @@
-import { DynamoDB } from 'aws-sdk'
+import {
+  DeleteItemCommand,
+  DeleteItemOutput,
+  DynamoDB,
+  GetItemCommand,
+  PutItemCommand,
+  PutItemOutput,
+  QueryCommand,
+  ScanCommand,
+  ScanOutput,
+} from '@aws-sdk/client-dynamodb'
 
 import { Build, BuildBatch, Channel, ChannelBatch, ChannelCounts } from '../types'
 import { dynamodbBuildTableName, dynamodbChannelTableName, dynamodbTokenTableName } from '../config'
@@ -8,238 +18,236 @@ const dynamodb = xrayCapture(new DynamoDB({ apiVersion: '2012-08-10' }))
 
 /* Delete item */
 
-export const deleteBuildById = (channelId: string, buildId: string): Promise<DynamoDB.Types.DeleteItemOutput> =>
-  dynamodb
-    .deleteItem({
-      Key: {
-        BuildId: {
-          S: `${buildId}`,
-        },
-        ChannelId: {
-          S: `${channelId}`,
-        },
+export const deleteBuildById = async (channelId: string, buildId: string): Promise<DeleteItemOutput> => {
+  const command = new DeleteItemCommand({
+    Key: {
+      BuildId: {
+        S: `${buildId}`,
       },
-      TableName: dynamodbBuildTableName,
-    })
-    .promise()
+      ChannelId: {
+        S: `${channelId}`,
+      },
+    },
+    TableName: dynamodbBuildTableName,
+  })
+  return dynamodb.send(command)
+}
 
-export const deleteChannelById = (channelId: string): Promise<DynamoDB.Types.DeleteItemOutput> =>
-  dynamodb
-    .deleteItem({
-      Key: {
-        ChannelId: {
-          S: `${channelId}`,
-        },
+export const deleteChannelById = async (channelId: string): Promise<DeleteItemOutput> => {
+  const command = new DeleteItemCommand({
+    Key: {
+      ChannelId: {
+        S: `${channelId}`,
       },
-      TableName: dynamodbChannelTableName,
-    })
-    .promise()
+    },
+    TableName: dynamodbChannelTableName,
+  })
+  return dynamodb.send(command)
+}
 
-export const deleteTokenById = (channelId: string, token: string): Promise<DynamoDB.Types.DeleteItemOutput> =>
-  dynamodb
-    .deleteItem({
-      Key: {
-        ChannelId: {
-          S: `${channelId}`,
-        },
-        Token: {
-          S: `${token}`,
-        },
+export const deleteTokenById = async (channelId: string, token: string): Promise<DeleteItemOutput> => {
+  const command = new DeleteItemCommand({
+    Key: {
+      ChannelId: {
+        S: `${channelId}`,
       },
-      TableName: dynamodbTokenTableName,
-    })
-    .promise()
+      Token: {
+        S: `${token}`,
+      },
+    },
+    TableName: dynamodbTokenTableName,
+  })
+  return dynamodb.send(command)
+}
 
 /* Get single item */
 
-export const getBuildById = (channelId: string, buildId: string): Promise<Build> =>
-  dynamodb
-    .getItem({
-      Key: {
-        BuildId: {
-          S: `${buildId}`,
-        },
-        ChannelId: {
-          S: `${channelId}`,
-        },
+export const getBuildById = async (channelId: string, buildId: string): Promise<Build> => {
+  const command = new GetItemCommand({
+    Key: {
+      BuildId: {
+        S: `${buildId}`,
       },
-      TableName: dynamodbBuildTableName,
-    })
-    .promise()
-    .then((response: any) => JSON.parse(response.Item.Data.S as string))
+      ChannelId: {
+        S: `${channelId}`,
+      },
+    },
+    TableName: dynamodbBuildTableName,
+  })
+  const response = await dynamodb.send(command)
+  return JSON.parse(response.Item.Data.S as string)
+}
 
-export const getChannelById = (channelId: string): Promise<Channel> =>
-  dynamodb
-    .getItem({
-      Key: {
-        ChannelId: {
-          S: `${channelId}`,
-        },
+export const getChannelById = async (channelId: string): Promise<Channel> => {
+  const command = new GetItemCommand({
+    Key: {
+      ChannelId: {
+        S: `${channelId}`,
       },
-      TableName: dynamodbChannelTableName,
-    })
-    .promise()
-    .then((response: any) => JSON.parse(response.Item.Data.S as string))
+    },
+    TableName: dynamodbChannelTableName,
+  })
+  const response = await dynamodb.send(command)
+  return JSON.parse(response.Item.Data.S as string)
+}
 
-export const getTokenById = (channelId: string, token: string): Promise<{ submitter: string }> =>
-  dynamodb
-    .getItem({
-      Key: {
-        ChannelId: {
-          S: `${channelId}`,
-        },
-        Token: {
-          S: `${token}`,
-        },
+export const getTokenById = async (channelId: string, token: string): Promise<{ submitter: string }> => {
+  const command = new GetItemCommand({
+    Key: {
+      ChannelId: {
+        S: `${channelId}`,
       },
-      TableName: dynamodbTokenTableName,
-    })
-    .promise()
-    .then((response: any) => ({ submitter: response.Item.Submitter.S }))
+      Token: {
+        S: `${token}`,
+      },
+    },
+    TableName: dynamodbTokenTableName,
+  })
+  const response = await dynamodb.send(command)
+  return { submitter: response.Item.Submitter.S }
+}
 
 /* Query builds by channel */
 
-const getItemsFromBuildQuery = (response: DynamoDB.Types.ScanOutput): BuildBatch[] =>
+const getItemsFromBuildQuery = (response: ScanOutput): BuildBatch[] =>
   response.Items?.map((item) => ({
     channelId: item.ChannelId.S as string,
     data: JSON.parse(item.Data.S as string),
     id: item.BuildId.S as string,
   })) as BuildBatch[]
 
-export const queryBuildsByChannelId = (channelId: string): Promise<BuildBatch[]> =>
-  dynamodb
-    .query({
-      ExpressionAttributeValues: {
-        ':v1': {
-          S: channelId,
-        },
+export const queryBuildsByChannelId = async (channelId: string): Promise<BuildBatch[]> => {
+  const command = new QueryCommand({
+    ExpressionAttributeValues: {
+      ':v1': {
+        S: channelId,
       },
-      KeyConditionExpression: 'ChannelId = :v1',
-      TableName: dynamodbBuildTableName,
-    })
-    .promise()
-    .then((response: any) => getItemsFromBuildQuery(response))
+    },
+    KeyConditionExpression: 'ChannelId = :v1',
+    TableName: dynamodbBuildTableName,
+  })
+  const response = await dynamodb.send(command)
+  return getItemsFromBuildQuery(response)
+}
 
 /* Scan for all items */
 
-const getChannelsFromScan = (response: DynamoDB.Types.ScanOutput): ChannelBatch[] =>
+const getChannelsFromScan = (response: ScanOutput): ChannelBatch[] =>
   response.Items?.map((item) => ({
     data: JSON.parse(item.Data.S as string),
     id: item.ChannelId.S as string,
   })) as ChannelBatch[]
 
-export const scanChannels = (): Promise<ChannelBatch[]> =>
-  dynamodb
-    .scan({
-      AttributesToGet: ['ChannelId', 'Data'],
-      TableName: dynamodbChannelTableName,
-    })
-    .promise()
-    .then((response: any) => getChannelsFromScan(response))
+export const scanChannels = async (): Promise<ChannelBatch[]> => {
+  const command = new ScanCommand({
+    AttributesToGet: ['ChannelId', 'Data'],
+    TableName: dynamodbChannelTableName,
+  })
+  const response = await dynamodb.send(command)
+  return getChannelsFromScan(response)
+}
 
 /* Scan for expired items */
 
-export const scanExpiredBuildIds = (): Promise<{ buildId: string; channelId: string }[]> =>
-  dynamodb
-    .scan({
-      ExpressionAttributeValues: {
-        ':v1': {
-          N: '1',
-        },
-        ':v2': {
-          N: `${new Date().getTime()}`,
-        },
+export const scanExpiredBuildIds = async (): Promise<{ buildId: string; channelId: string }[]> => {
+  const command = new ScanCommand({
+    ExpressionAttributeValues: {
+      ':v1': {
+        N: '1',
       },
-      FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
-      IndexName: 'ExpirationIndex',
-      TableName: dynamodbBuildTableName,
-    })
-    .promise()
-    .then((response: any) =>
-      response.Items.map((item: any) => ({ buildId: item.BuildId.S, channelId: item.ChannelId.S }))
-    )
+      ':v2': {
+        N: `${new Date().getTime()}`,
+      },
+    },
+    FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
+    IndexName: 'ExpirationIndex',
+    TableName: dynamodbBuildTableName,
+  })
+  const response = await dynamodb.send(command)
+  return response.Items.map((item: any) => ({ buildId: item.BuildId.S, channelId: item.ChannelId.S }))
+}
 
-export const scanExpiredTokens = (): Promise<{ channelId: string; token: string }[]> =>
-  dynamodb
-    .scan({
-      ExpressionAttributeValues: {
-        ':v1': {
-          N: '1',
-        },
-        ':v2': {
-          N: `${new Date().getTime()}`,
-        },
+export const scanExpiredTokens = async (): Promise<{ channelId: string; token: string }[]> => {
+  const command = new ScanCommand({
+    ExpressionAttributeValues: {
+      ':v1': {
+        N: '1',
       },
-      FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
-      IndexName: 'ExpirationIndex',
-      TableName: dynamodbTokenTableName,
-    })
-    .promise()
-    .then((response: any) => response.Items.map((item: any) => ({ channelId: item.ChannelId.S, token: item.Token.S })))
+      ':v2': {
+        N: `${new Date().getTime()}`,
+      },
+    },
+    FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
+    IndexName: 'ExpirationIndex',
+    TableName: dynamodbTokenTableName,
+  })
+  const response = await dynamodb.send(command)
+  return response.Items.map((item: any) => ({ channelId: item.ChannelId.S, token: item.Token.S }))
+}
 
 /* Set item */
 
-export const setBuildById = (channelId: string, buildId: string, data: Build): Promise<DynamoDB.Types.PutItemOutput> =>
-  dynamodb
-    .putItem({
-      Item: {
-        BuildId: {
-          S: `${buildId}`,
-        },
-        ChannelId: {
-          S: `${channelId}`,
-        },
-        Data: {
-          S: JSON.stringify(data),
-        },
-        Expiration: {
-          N: `${data.expiration ?? 0}`,
-        },
+export const setBuildById = async (channelId: string, buildId: string, data: Build): Promise<PutItemOutput> => {
+  const command = new PutItemCommand({
+    Item: {
+      BuildId: {
+        S: `${buildId}`,
       },
-      TableName: dynamodbBuildTableName,
-    })
-    .promise()
-
-export const setChannelById = (channelId: string, data: Channel): Promise<DynamoDB.Types.PutItemOutput> =>
-  dynamodb
-    .putItem({
-      Item: {
-        ChannelId: {
-          S: `${channelId}`,
-        },
-        Data: {
-          S: JSON.stringify(data),
-        },
+      ChannelId: {
+        S: `${channelId}`,
       },
-      TableName: dynamodbChannelTableName,
-    })
-    .promise()
+      Data: {
+        S: JSON.stringify(data),
+      },
+      Expiration: {
+        N: `${data.expiration ?? 0}`,
+      },
+    },
+    TableName: dynamodbBuildTableName,
+  })
+  return dynamodb.send(command)
+}
 
-export const setTokenById = (
+export const setChannelById = async (channelId: string, data: Channel): Promise<PutItemOutput> => {
+  const command = new PutItemCommand({
+    Item: {
+      ChannelId: {
+        S: `${channelId}`,
+      },
+      Data: {
+        S: JSON.stringify(data),
+      },
+    },
+    TableName: dynamodbChannelTableName,
+  })
+  return dynamodb.send(command)
+}
+
+export const setTokenById = async (
   channelId: string,
   token: string,
   expiration: number,
   submitter: string
-): Promise<DynamoDB.Types.PutItemOutput> =>
-  dynamodb
-    .putItem({
-      Item: {
-        ChannelId: {
-          S: `${channelId}`,
-        },
-        Expiration: {
-          N: `${expiration}`,
-        },
-        Submitter: {
-          S: `${submitter}`,
-        },
-        Token: {
-          S: `${token}`,
-        },
+): Promise<PutItemOutput> => {
+  const command = new PutItemCommand({
+    Item: {
+      ChannelId: {
+        S: `${channelId}`,
       },
-      TableName: dynamodbTokenTableName,
-    })
-    .promise()
+      Expiration: {
+        N: `${expiration}`,
+      },
+      Submitter: {
+        S: `${submitter}`,
+      },
+      Token: {
+        S: `${token}`,
+      },
+    },
+    TableName: dynamodbTokenTableName,
+  })
+  return dynamodb.send(command)
+}
 
 /* Update counts */
 

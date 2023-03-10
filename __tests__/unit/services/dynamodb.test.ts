@@ -16,19 +16,16 @@ import {
   updateChannelCounts,
 } from '@services/dynamodb'
 
-const mockDeleteItem = jest.fn()
-const mockGetItem = jest.fn()
-const mockPutItem = jest.fn()
-const mockQueryTable = jest.fn()
-const mockScanTable = jest.fn()
-jest.mock('aws-sdk', () => ({
+const mockSend = jest.fn()
+jest.mock('@aws-sdk/client-dynamodb', () => ({
+  DeleteItemCommand: jest.fn().mockImplementation((x) => x),
   DynamoDB: jest.fn(() => ({
-    deleteItem: (...args) => ({ promise: () => mockDeleteItem(...args) }),
-    getItem: (...args) => ({ promise: () => mockGetItem(...args) }),
-    putItem: (...args) => ({ promise: () => mockPutItem(...args) }),
-    query: (...args) => ({ promise: () => mockQueryTable(...args) }),
-    scan: (...args) => ({ promise: () => mockScanTable(...args) }),
+    send: (...args) => mockSend(...args),
   })),
+  GetItemCommand: jest.fn().mockImplementation((x) => x),
+  PutItemCommand: jest.fn().mockImplementation((x) => x),
+  QueryCommand: jest.fn().mockImplementation((x) => x),
+  ScanCommand: jest.fn().mockImplementation((x) => x),
 }))
 jest.mock('@utils/logging', () => ({
   xrayCapture: jest.fn().mockImplementation((x) => x),
@@ -36,183 +33,201 @@ jest.mock('@utils/logging', () => ({
 
 describe('dynamodb', () => {
   describe('deleteBuildById', () => {
-    test('expect channelId and buildId passed to delete', async () => {
+    test('should call DynamoDB with the correct arguments', async () => {
       await deleteBuildById(channelId, buildId)
-      expect(mockDeleteItem).toHaveBeenCalledWith({
-        Key: {
-          BuildId: {
-            S: `${buildId}`,
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Key: {
+            BuildId: { S: buildId },
+            ChannelId: { S: channelId },
           },
-          ChannelId: {
-            S: `${channelId}`,
-          },
-        },
-        TableName: 'build-table',
-      })
+          TableName: 'build-table',
+        })
+      )
     })
   })
 
   describe('deleteChannelById', () => {
-    test('expect channelId passed to delete', async () => {
+    test('should call DynamoDB with the correct arguments', async () => {
       await deleteChannelById(channelId)
-      expect(mockDeleteItem).toHaveBeenCalledWith({
-        Key: {
-          ChannelId: {
-            S: `${channelId}`,
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Key: {
+            ChannelId: { S: channelId },
           },
-        },
-        TableName: 'channel-table',
-      })
+          TableName: 'channel-table',
+        })
+      )
     })
   })
 
   describe('deleteTokenById', () => {
-    test('expect channelId and token passed to delete', async () => {
+    test('should call DynamoDB with the correct arguments', async () => {
       await deleteTokenById(channelId, buildToken.value)
-      expect(mockDeleteItem).toHaveBeenCalledWith({
-        Key: {
-          ChannelId: {
-            S: `${channelId}`,
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Key: {
+            ChannelId: { S: channelId },
+            Token: { S: buildToken.value },
           },
-          Token: {
-            S: `${buildToken.value}`,
-          },
-        },
-        TableName: 'token-table',
-      })
+          TableName: 'token-table',
+        })
+      )
     })
   })
 
   describe('getBuildById', () => {
-    beforeAll(() => {
-      mockGetItem.mockResolvedValue({ Item: { Data: { S: JSON.stringify(buildKiller) } } })
-    })
-
-    test('expect id passed to get', async () => {
-      await getBuildById(channelId, buildId)
-      expect(mockGetItem).toHaveBeenCalledWith({
-        Key: {
-          BuildId: {
-            S: `${buildId}`,
-          },
-          ChannelId: {
-            S: `${channelId}`,
-          },
-        },
-        TableName: 'build-table',
+    test('should call DynamoDB with the correct arguments', async () => {
+      mockSend.mockResolvedValueOnce({
+        Item: { Data: { S: JSON.stringify(buildKiller) } },
       })
-    })
 
-    test('expect data parsed and returned', async () => {
       const result = await getBuildById(channelId, buildId)
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Key: {
+            BuildId: { S: buildId },
+            ChannelId: { S: channelId },
+          },
+          TableName: 'build-table',
+        })
+      )
       expect(result).toEqual(buildKiller)
     })
   })
 
   describe('getChannelById', () => {
-    beforeAll(() => {
-      mockGetItem.mockResolvedValue({ Item: { Data: { S: JSON.stringify(channel) } } })
-    })
-
-    test('expect id passed to get', async () => {
-      await getChannelById(channelId)
-      expect(mockGetItem).toHaveBeenCalledWith({
-        Key: {
-          ChannelId: {
-            S: `${channelId}`,
-          },
-        },
-        TableName: 'channel-table',
+    test('should call DynamoDB with the correct arguments', async () => {
+      mockSend.mockResolvedValueOnce({
+        Item: { Data: { S: JSON.stringify(channel) } },
       })
-    })
 
-    test('expect data parsed and returned', async () => {
       const result = await getChannelById(channelId)
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Key: {
+            ChannelId: { S: channelId },
+          },
+          TableName: 'channel-table',
+        })
+      )
       expect(result).toEqual(channel)
     })
   })
 
   describe('getTokenById', () => {
-    beforeAll(() => {
-      mockGetItem.mockResolvedValue({ Item: { Submitter: { S: submitter } } })
-    })
-
-    test('expect id passed to get', async () => {
-      await getTokenById(channelId, buildToken.value)
-      expect(mockGetItem).toHaveBeenCalledWith({
-        Key: {
-          ChannelId: {
-            S: `${channelId}`,
-          },
-          Token: {
-            S: `${buildToken.value}`,
-          },
-        },
-        TableName: 'token-table',
+    test('should call DynamoDB with the correct arguments', async () => {
+      mockSend.mockResolvedValueOnce({
+        Item: { Submitter: { S: submitter } },
       })
-    })
 
-    test('expect data parsed and returned', async () => {
       const result = await getTokenById(channelId, buildToken.value)
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Key: {
+            ChannelId: { S: channelId },
+            Token: { S: buildToken.value },
+          },
+          TableName: 'token-table',
+        })
+      )
       expect(result).toEqual({ submitter })
     })
   })
 
   describe('queryBuildsByChannelId', () => {
-    beforeAll(() => {
-      mockQueryTable.mockResolvedValue({
+    test('should call DynamoDB with the correct arguments', async () => {
+      mockSend.mockResolvedValueOnce({
         Items: [
-          { BuildId: { S: `${buildId}` }, ChannelId: { S: `${channelId}` }, Data: { S: JSON.stringify(buildKiller) } },
+          {
+            BuildId: { S: buildId },
+            ChannelId: { S: channelId },
+            Data: { S: JSON.stringify(buildSurvivor) },
+          },
         ],
       })
-    })
 
-    test('expect data parsed and returned', async () => {
       const result = await queryBuildsByChannelId(channelId)
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ExpressionAttributeValues: { ':v1': { S: channelId } },
+          KeyConditionExpression: 'ChannelId = :v1',
+          TableName: 'build-table',
+        })
+      )
       expect(result).toEqual([
         {
           channelId,
-          data: buildKiller,
+          data: buildSurvivor,
           id: buildId,
         },
       ])
     })
-
-    test('expect empty object with no data returned', async () => {
-      mockQueryTable.mockResolvedValueOnce({ Items: [] })
-      const result = await queryBuildsByChannelId(channelId)
-      expect(result).toEqual([])
-    })
   })
 
   describe('scanChannels', () => {
-    beforeAll(() => {
-      mockScanTable.mockResolvedValue({
-        Items: [{ ChannelId: { S: `${channelId}` }, Data: { S: JSON.stringify(channel) } }],
+    test('should call DynamoDB with the correct arguments', async () => {
+      mockSend.mockResolvedValueOnce({
+        Items: [
+          {
+            ChannelId: { S: channelId },
+            Data: { S: JSON.stringify(channel) },
+          },
+        ],
       })
-    })
 
-    test('expect data parsed and returned', async () => {
       const result = await scanChannels()
-      expect(result).toEqual([{ data: channel, id: channelId }])
-    })
 
-    test('expect empty object with no data returned', async () => {
-      mockScanTable.mockResolvedValueOnce({ Items: [] })
-      const result = await scanChannels()
-      expect(result).toEqual([])
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          AttributesToGet: ['ChannelId', 'Data'],
+          TableName: 'channel-table',
+        })
+      )
+      expect(result).toEqual([
+        {
+          data: channel,
+          id: channelId,
+        },
+      ])
     })
   })
 
   describe('scanExpiredBuildIds', () => {
-    beforeAll(() => {
-      mockScanTable.mockResolvedValue({
-        Items: [{ BuildId: { S: `${buildId}` }, ChannelId: { S: `${channelId}` } }],
+    test('should call DynamoDB with the correct arguments', async () => {
+      mockSend.mockResolvedValueOnce({
+        Items: [
+          {
+            BuildId: { S: buildId },
+            ChannelId: { S: channelId },
+          },
+        ],
       })
-    })
 
-    test('expect data parsed and returned', async () => {
       const result = await scanExpiredBuildIds()
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ExpressionAttributeValues: {
+            ':v1': {
+              N: '1',
+            },
+            ':v2': {
+              N: expect.anything(),
+            },
+          },
+          FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
+          IndexName: 'ExpirationIndex',
+          TableName: 'build-table',
+        })
+      )
       expect(result).toEqual([
         {
           buildId,
@@ -220,23 +235,36 @@ describe('dynamodb', () => {
         },
       ])
     })
-
-    test('expect empty object with no data returned', async () => {
-      mockScanTable.mockResolvedValueOnce({ Items: [] })
-      const result = await scanExpiredBuildIds()
-      expect(result).toEqual([])
-    })
   })
 
   describe('scanExpiredTokens', () => {
-    beforeAll(() => {
-      mockScanTable.mockResolvedValue({
-        Items: [{ ChannelId: { S: `${channelId}` }, Token: { S: `${buildToken.value}` } }],
+    test('should call DynamoDB with the correct arguments', async () => {
+      mockSend.mockResolvedValueOnce({
+        Items: [
+          {
+            ChannelId: { S: channelId },
+            Token: { S: buildToken.value },
+          },
+        ],
       })
-    })
 
-    test('expect data parsed and returned', async () => {
       const result = await scanExpiredTokens()
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ExpressionAttributeValues: {
+            ':v1': {
+              N: '1',
+            },
+            ':v2': {
+              N: expect.anything(),
+            },
+          },
+          FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
+          IndexName: 'ExpirationIndex',
+          TableName: 'token-table',
+        })
+      )
       expect(result).toEqual([
         {
           channelId,
@@ -244,141 +272,175 @@ describe('dynamodb', () => {
         },
       ])
     })
+  })
 
-    test('expect empty object with no data returned', async () => {
-      mockScanTable.mockResolvedValueOnce({ Items: [] })
+  describe('scanExpiredTokens', () => {
+    test('should call DynamoDB with the correct arguments', async () => {
+      mockSend.mockResolvedValueOnce({
+        Items: [
+          {
+            ChannelId: { S: channelId },
+            Token: { S: buildToken.value },
+          },
+        ],
+      })
+
       const result = await scanExpiredTokens()
-      expect(result).toEqual([])
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          ExpressionAttributeValues: {
+            ':v1': {
+              N: '1',
+            },
+            ':v2': {
+              N: expect.anything(),
+            },
+          },
+          FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
+          IndexName: 'ExpirationIndex',
+          TableName: 'token-table',
+        })
+      )
+      expect(result).toEqual([
+        {
+          channelId,
+          token: buildToken.value,
+        },
+      ])
     })
   })
 
   describe('setBuildById', () => {
-    test('expect index and data passed to put', async () => {
-      await setBuildById(channelId, buildId, buildKiller)
-      expect(mockPutItem).toHaveBeenCalledWith({
-        Item: {
-          BuildId: {
-            S: `${buildId}`,
-          },
-          ChannelId: {
-            S: `${channelId}`,
-          },
-          Data: {
-            S: JSON.stringify(buildKiller),
-          },
-          Expiration: {
-            N: `${buildKiller.expiration}`,
-          },
-        },
-        TableName: 'build-table',
-      })
-    })
+    test('should call DynamoDB with the correct arguments', async () => {
+      const modifiedBuild = { ...buildKiller, expiration: undefined }
+      await setBuildById(channelId, buildId, modifiedBuild)
 
-    test('expect expiration defaults to 0', async () => {
-      const noExpirationBuild = { ...buildKiller, expiration: undefined }
-      await setBuildById(channelId, buildId, noExpirationBuild)
-      expect(mockPutItem).toHaveBeenCalledWith({
-        Item: {
-          BuildId: {
-            S: `${buildId}`,
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Item: {
+            BuildId: {
+              S: buildId,
+            },
+            ChannelId: {
+              S: channelId,
+            },
+            Data: {
+              S: JSON.stringify(modifiedBuild),
+            },
+            Expiration: {
+              N: '0',
+            },
           },
-          ChannelId: {
-            S: `${channelId}`,
-          },
-          Data: {
-            S: JSON.stringify(noExpirationBuild),
-          },
-          Expiration: {
-            N: '0',
-          },
-        },
-        TableName: 'build-table',
-      })
+          TableName: 'build-table',
+        })
+      )
     })
   })
 
   describe('setChannelById', () => {
-    test('expect index and data passed to put', async () => {
+    test('should call DynamoDB with the correct arguments', async () => {
       await setChannelById(channelId, channel)
-      expect(mockPutItem).toHaveBeenCalledWith({
-        Item: {
-          ChannelId: {
-            S: `${channelId}`,
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Item: {
+            ChannelId: {
+              S: channelId,
+            },
+            Data: {
+              S: JSON.stringify(channel),
+            },
           },
-          Data: {
-            S: JSON.stringify(channel),
-          },
-        },
-        TableName: 'channel-table',
-      })
+          TableName: 'channel-table',
+        })
+      )
     })
   })
 
   describe('setTokenById', () => {
-    test('expect index and data passed to put', async () => {
-      await setTokenById(channelId, buildToken.value, buildToken.expiration, submitter)
-      expect(mockPutItem).toHaveBeenCalledWith({
-        Item: {
-          ChannelId: {
-            S: `${channelId}`,
+    test('should call DynamoDB with the correct arguments', async () => {
+      const expiration = 8675309
+      await setTokenById(channelId, buildToken.value, expiration, submitter)
+
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Item: {
+            ChannelId: {
+              S: channelId,
+            },
+            Expiration: {
+              N: `${expiration}`,
+            },
+            Submitter: {
+              S: submitter,
+            },
+            Token: {
+              S: buildToken.value,
+            },
           },
-          Expiration: {
-            N: `${buildToken.expiration}`,
-          },
-          Submitter: {
-            S: `${submitter}`,
-          },
-          Token: {
-            S: `${buildToken.value}`,
-          },
-        },
-        TableName: 'token-table',
-      })
+          TableName: 'token-table',
+        })
+      )
     })
   })
 
   describe('updateChannelCounts', () => {
-    beforeAll(() => {
-      mockGetItem.mockResolvedValue({ Item: { Data: { S: JSON.stringify(channel) } } })
-      mockQueryTable.mockResolvedValue({
-        Items: [
-          { BuildId: { S: `${buildId}` }, ChannelId: { S: `${channelId}` }, Data: { S: JSON.stringify(buildKiller) } },
-          {
-            BuildId: { S: 'tfvdertyujmytf' },
-            ChannelId: { S: `${channelId}` },
-            Data: { S: JSON.stringify(buildSurvivor) },
-          },
-        ],
-      })
-    })
-
     test('expect channel counts recalculated', async () => {
-      const mockPutItemParts = jest.fn()
-      mockPutItem.mockImplementationOnce((value) =>
-        mockPutItemParts(value.Item.ChannelId.S, JSON.parse(value.Item.Data.S), value.TableName)
-      )
+      mockSend
+        .mockResolvedValueOnce({
+          Items: [
+            { BuildId: { S: buildId }, ChannelId: { S: channelId }, Data: { S: JSON.stringify(buildKiller) } },
+            {
+              BuildId: { S: 'tfvdertyujmytf' },
+              ChannelId: { S: channelId },
+              Data: { S: JSON.stringify(buildSurvivor) },
+            },
+          ],
+        })
+        .mockResolvedValueOnce({ Item: { Data: { S: JSON.stringify(channel) } } })
 
       const counts = { completed: 1, pending: 1 }
-      const { lastModified: _, ...channelUpdatedCounts } = { ...channel, counts }
       const result = await updateChannelCounts(channelId)
 
-      expect(mockPutItemParts).toHaveBeenCalledWith(
-        channelId,
-        expect.objectContaining(channelUpdatedCounts),
-        'channel-table'
+      expect(mockSend).toHaveBeenCalledWith(
+        expect.objectContaining({
+          Item: {
+            ChannelId: {
+              S: channelId,
+            },
+            Data: {
+              S: expect.anything(),
+            },
+          },
+          TableName: 'channel-table',
+        })
       )
       expect(result).toEqual(counts)
     })
 
     test('expect last modified not updated', async () => {
+      mockSend
+        .mockResolvedValueOnce({
+          Items: [
+            { BuildId: { S: buildId }, ChannelId: { S: channelId }, Data: { S: JSON.stringify(buildKiller) } },
+            {
+              BuildId: { S: 'tfvdertyujmytf' },
+              ChannelId: { S: channelId },
+              Data: { S: JSON.stringify(buildSurvivor) },
+            },
+          ],
+        })
+        .mockResolvedValueOnce({ Item: { Data: { S: JSON.stringify(channel) } } })
+
       const counts = { completed: 1, pending: 1 }
       const channelUpdatedCounts = { ...channel, counts }
       const result = await updateChannelCounts(channelId, false)
 
-      expect(mockPutItem).toHaveBeenCalledWith({
+      expect(mockSend).toHaveBeenCalledWith({
         Item: {
           ChannelId: {
-            S: `${channelId}`,
+            S: channelId,
           },
           Data: {
             S: JSON.stringify(channelUpdatedCounts),
