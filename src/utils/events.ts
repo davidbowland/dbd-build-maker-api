@@ -47,7 +47,7 @@ export const formatBuild = (build: Build, disabledOptions: string[]): Build => {
       throw new Error('"item" has an invalid value')
     }
     if (build.item && build.item !== 'None') {
-      const item = buildOptions['Survivor Items'][build.item as keyof typeof buildOptions['Survivor Items']]
+      const item = buildOptions['Survivor Items'][build.item as keyof (typeof buildOptions)['Survivor Items']]
       if (disabledOptions.indexOf(build.addon1) !== -1 || item.indexOf(build.addon1) < 0) {
         throw new Error('"addon1" has an invalid value')
       }

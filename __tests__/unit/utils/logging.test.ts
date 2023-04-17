@@ -46,7 +46,7 @@ describe('logging', () => {
   })
 
   describe('xrayCapture', () => {
-    const capturedDynamodb = 'captured_dynamodb' as unknown as DynamoDB
+    const capturedDynamodb = 'captured-dynamodb' as unknown as DynamoDB
     const dynamodb = 'dynamodb'
 
     beforeAll(() => {

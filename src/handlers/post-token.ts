@@ -1,11 +1,11 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
 import { getChannelById, setTokenById } from '../services/dynamodb'
 import { log, logError } from '../utils/logging'
-import { Token } from '../types'
 import { extractSubmitterFromEvent } from '../utils/events'
 import { getNextToken } from '../utils/token-generator'
 import { getUserFromEvent } from '../services/twitch'
 import status from '../utils/status'
+import { Token } from '../types'
 
 const createNewToken = async (channelId: string, submitter: string): Promise<APIGatewayProxyResultV2<Token>> => {
   const buildToken = await getNextToken(channelId)

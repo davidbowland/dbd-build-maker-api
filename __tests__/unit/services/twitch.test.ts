@@ -3,9 +3,9 @@ import { channel, channelId, mods, twitchAuthToken, user } from '../__mocks__'
 import { getChannelInfo, getChannelMods, getUserFromEvent, validateToken } from '@services/twitch'
 import { rest, server } from '@setup-server'
 import { APIGatewayProxyEventV2 } from '@types'
-import { URLSearchParams } from 'url'
 import { mocked } from 'jest-mock'
 import { twitchClientId } from '@config'
+import { URLSearchParams } from 'url'
 
 jest.mock('@utils/events')
 jest.mock('@utils/logging')
