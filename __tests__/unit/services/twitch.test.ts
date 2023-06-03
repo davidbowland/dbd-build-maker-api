@@ -138,6 +138,7 @@ describe('twitch', () => {
           },
         ],
       })
+
       const result = await getChannelInfo(channelId, twitchAuthToken)
       expect(result).toEqual({
         name: 'biggerthansheexpected',
@@ -173,6 +174,7 @@ describe('twitch', () => {
 
     test('expect error when endpoint errors', async () => {
       getValidateEndpoint.mockReturnValueOnce(undefined)
+
       await expect(validateToken(twitchAuthToken)).rejects.toBeDefined()
     })
   })

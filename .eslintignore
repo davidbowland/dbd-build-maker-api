@@ -5,6 +5,7 @@ dist/
 coverage/
 infrastructure/
 node_modules/
+src/assets/
 *.min.*
 jest.*.*
 package-lock.json

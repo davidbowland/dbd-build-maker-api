@@ -35,7 +35,6 @@ describe('dynamodb', () => {
   describe('deleteBuildById', () => {
     test('should call DynamoDB with the correct arguments', async () => {
       await deleteBuildById(channelId, buildId)
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Key: {
@@ -51,7 +50,6 @@ describe('dynamodb', () => {
   describe('deleteChannelById', () => {
     test('should call DynamoDB with the correct arguments', async () => {
       await deleteChannelById(channelId)
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Key: {
@@ -66,7 +64,6 @@ describe('dynamodb', () => {
   describe('deleteTokenById', () => {
     test('should call DynamoDB with the correct arguments', async () => {
       await deleteTokenById(channelId, buildToken.value)
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Key: {
@@ -86,7 +83,6 @@ describe('dynamodb', () => {
       })
 
       const result = await getBuildById(channelId, buildId)
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Key: {
@@ -107,7 +103,6 @@ describe('dynamodb', () => {
       })
 
       const result = await getChannelById(channelId)
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Key: {
@@ -127,7 +122,6 @@ describe('dynamodb', () => {
       })
 
       const result = await getTokenById(channelId, buildToken.value)
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Key: {
@@ -154,7 +148,6 @@ describe('dynamodb', () => {
       })
 
       const result = await queryBuildsByChannelId(channelId)
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           ExpressionAttributeValues: { ':v1': { S: channelId } },
@@ -184,7 +177,6 @@ describe('dynamodb', () => {
       })
 
       const result = await scanChannels()
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           AttributesToGet: ['ChannelId', 'Data'],
@@ -212,7 +204,6 @@ describe('dynamodb', () => {
       })
 
       const result = await scanExpiredBuildIds()
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           ExpressionAttributeValues: {
@@ -249,7 +240,6 @@ describe('dynamodb', () => {
       })
 
       const result = await scanExpiredTokens()
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           ExpressionAttributeValues: {
@@ -286,7 +276,6 @@ describe('dynamodb', () => {
       })
 
       const result = await scanExpiredTokens()
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           ExpressionAttributeValues: {
@@ -314,8 +303,8 @@ describe('dynamodb', () => {
   describe('setBuildById', () => {
     test('should call DynamoDB with the correct arguments', async () => {
       const modifiedBuild = { ...buildKiller, expiration: undefined }
-      await setBuildById(channelId, buildId, modifiedBuild)
 
+      await setBuildById(channelId, buildId, modifiedBuild)
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Item: {
@@ -341,7 +330,6 @@ describe('dynamodb', () => {
   describe('setChannelById', () => {
     test('should call DynamoDB with the correct arguments', async () => {
       await setChannelById(channelId, channel)
-
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Item: {
@@ -361,8 +349,8 @@ describe('dynamodb', () => {
   describe('setTokenById', () => {
     test('should call DynamoDB with the correct arguments', async () => {
       const expiration = 8675309
-      await setTokenById(channelId, buildToken.value, expiration, submitter)
 
+      await setTokenById(channelId, buildToken.value, expiration, submitter)
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Item: {
@@ -399,10 +387,9 @@ describe('dynamodb', () => {
           ],
         })
         .mockResolvedValueOnce({ Item: { Data: { S: JSON.stringify(channel) } } })
-
       const counts = { completed: 1, pending: 1 }
-      const result = await updateChannelCounts(channelId)
 
+      const result = await updateChannelCounts(channelId)
       expect(mockSend).toHaveBeenCalledWith(
         expect.objectContaining({
           Item: {
@@ -432,11 +419,10 @@ describe('dynamodb', () => {
           ],
         })
         .mockResolvedValueOnce({ Item: { Data: { S: JSON.stringify(channel) } } })
-
       const counts = { completed: 1, pending: 1 }
       const channelUpdatedCounts = { ...channel, counts }
-      const result = await updateChannelCounts(channelId, false)
 
+      const result = await updateChannelCounts(channelId, false)
       expect(mockSend).toHaveBeenCalledWith({
         Item: {
           ChannelId: {

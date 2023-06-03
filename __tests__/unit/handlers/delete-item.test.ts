@@ -22,12 +22,14 @@ describe('delete-item', () => {
   describe('deleteByIdHandler', () => {
     test("expect FORBIDDEN when user doesn't match", async () => {
       mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ ...user, id: 'something-that-does-not-match' })
+
       const result = await deleteByIdHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
     test('expect INTERNAL_SERVER_ERROR on getUserFromEvent reject', async () => {
       mocked(twitch).getUserFromEvent.mockRejectedValueOnce(undefined)
+
       const result = await deleteByIdHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
@@ -39,12 +41,14 @@ describe('delete-item', () => {
 
     test('expect deleteDataById not to be called when getDataById rejects', async () => {
       mocked(dynamodb).getChannelById.mockRejectedValueOnce(undefined)
+
       await deleteByIdHandler(event)
       expect(mocked(dynamodb).deleteChannelById).toHaveBeenCalledTimes(0)
     })
 
     test('expect INTERNAL_SERVER_ERROR on deleteDataById reject', async () => {
       mocked(dynamodb).deleteChannelById.mockRejectedValueOnce(undefined)
+
       const result = await deleteByIdHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
@@ -56,6 +60,7 @@ describe('delete-item', () => {
 
     test('expect NO_CONTENT when index does not exist', async () => {
       mocked(dynamodb).getChannelById.mockRejectedValueOnce(undefined)
+
       const result = await deleteByIdHandler(event)
       expect(result).toEqual(status.NO_CONTENT)
     })

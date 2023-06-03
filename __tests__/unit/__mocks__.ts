@@ -1,4 +1,4 @@
-import { Build, BuildBatch, Channel, ChannelBatch, ChannelMod, PatchOperation, Token, User } from '@types'
+import { Build, BuildBatch, Channel, ChannelBatch, ChannelMod, PatchOperation, Release, Token, User } from '@types'
 
 export const buildId = 'ytrfghjklkmnbvfty'
 
@@ -55,6 +55,17 @@ export const channel: Channel = {
 }
 
 export const jsonPatchOperations: PatchOperation[] = [{ op: 'replace', path: '/notes', value: 'No Nurse' }]
+
+export const releases: Release[] = [
+  {
+    filename: 'build-options-chapter-25',
+    releaseTime: '2002-08-30T15:00:00Z',
+  },
+  {
+    filename: 'build-options-chapter-24',
+    releaseTime: '2002-06-07T15:00:00Z',
+  },
+]
 
 export const submitter = 'cfb'
 

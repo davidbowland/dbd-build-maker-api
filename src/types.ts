@@ -23,6 +23,10 @@ export interface BuildBatch {
   id: string
 }
 
+export interface BuildOptions {
+  [key: string]: any
+}
+
 export interface ChannelCounts {
   completed: number
   pending: number
@@ -47,6 +51,11 @@ export interface Channel {
 export interface ChannelBatch {
   data: Channel
   id: string
+}
+
+export interface Release {
+  filename: string
+  releaseTime: string
 }
 
 export interface StringObject {

@@ -30,7 +30,8 @@ export const putBuildHandler = async (event: APIGatewayProxyEventV2): Promise<AP
     try {
       const channel = await getChannelById(channelId)
       try {
-        const build = { ...extractBuildFromEvent(event, channel.disabledOptions), submitter: token.submitter }
+        const eventBuild = await extractBuildFromEvent(event, channel.disabledOptions)
+        const build = { ...eventBuild, submitter: token.submitter }
         return await confirmBuild(channelId, buildId, build)
       } catch (error: any) {
         return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }

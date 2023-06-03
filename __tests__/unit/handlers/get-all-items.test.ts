@@ -20,6 +20,7 @@ describe('get-all-items', () => {
   describe('getAllItemsHandler', () => {
     test('expect INTERNAL_SERVER_ERROR on scanSessions reject', async () => {
       mocked(dynamodb).scanChannels.mockRejectedValueOnce(undefined)
+
       const result = await getAllItemsHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })

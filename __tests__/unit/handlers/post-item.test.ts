@@ -30,30 +30,35 @@ describe('post-item', () => {
       mocked(events).extractTokenFromEvent.mockImplementationOnce(() => {
         throw new Error('Bad request')
       })
+
       const result = await postItemHandler(event)
       expect(result).toEqual(expect.objectContaining(status.BAD_REQUEST))
     })
 
     test('expect INTERNAL_SERVER_ERROR on validateToken reject', async () => {
       mocked(twitch).validateToken.mockRejectedValueOnce(undefined)
+
       const result = await postItemHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
     test('expect FORBIDDEN when validateToken return undefined', async () => {
       mocked(twitch).validateToken.mockResolvedValueOnce(undefined)
+
       const result = await postItemHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
     test('expect INTERNAL_SERVER_ERROR on getChannelInfo reject', async () => {
       mocked(twitch).getChannelInfo.mockRejectedValueOnce(undefined)
+
       const result = await postItemHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
     test('expect INTERNAL_SERVER_ERROR on getChannelMods reject', async () => {
       mocked(twitch).getChannelMods.mockRejectedValueOnce(undefined)
+
       const result = await postItemHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
@@ -73,6 +78,7 @@ describe('post-item', () => {
 
     test('expect INTERNAL_SERVER_ERROR on setChannelById reject', async () => {
       mocked(dynamodb).setChannelById.mockRejectedValueOnce(undefined)
+
       const result = await postItemHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })

@@ -34,6 +34,7 @@ describe('id-generator', () => {
       mocked(dynamodb).getTokenById.mockResolvedValueOnce({ submitter })
       mockRandom.mockReturnValueOnce(0.5)
       mockRandom.mockReturnValueOnce(0.25)
+
       const result = await getNextToken(channelId)
       expect(result).toEqual(expect.objectContaining({ value: 'b2s2' }))
       expect(result.expiration).toBeDefined()
@@ -43,6 +44,7 @@ describe('id-generator', () => {
       mocked(dynamodb).getBuildById.mockResolvedValueOnce(buildKiller)
       mockRandom.mockReturnValueOnce(0.5)
       mockRandom.mockReturnValueOnce(0.25)
+
       const result = await getNextToken(channelId)
       expect(result).toEqual(expect.objectContaining({ value: 'b2s2' }))
       expect(result.expiration).toBeDefined()

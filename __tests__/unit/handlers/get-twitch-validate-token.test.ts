@@ -30,6 +30,7 @@ describe('get-twitch-validate-token', () => {
 
     test('expect status of "invalid" when user token has expired or is invalid', async () => {
       mocked(twitch).getUserFromEvent.mockResolvedValueOnce(undefined)
+
       const result = await getTwitchValidateTokenHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))
       expect(JSON.parse(result.body)).toEqual({
@@ -39,6 +40,7 @@ describe('get-twitch-validate-token', () => {
 
     test('expect INTERNAL_SERVER_ERROR when getUserFromEvent rejects', async () => {
       mocked(twitch).getUserFromEvent.mockRejectedValueOnce(undefined)
+
       const result = await getTwitchValidateTokenHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })

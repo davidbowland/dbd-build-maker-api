@@ -1,11 +1,18 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
-import buildOptions from '../assets/build-options.json'
-import { log } from '../utils/logging'
+import { log, logError } from '../utils/logging'
+import { getActiveBuildOptions } from '../utils/build-options'
 import status from '../utils/status'
 
 export const getBuildOptionsHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
-  return { ...status.OK, body: JSON.stringify(buildOptions) }
+
+  try {
+    const buildOptions = await getActiveBuildOptions()
+    return { ...status.OK, body: JSON.stringify(buildOptions) }
+  } catch (error) {
+    logError(error)
+    return status.INTERNAL_SERVER_ERROR
+  }
 }
 
 /*

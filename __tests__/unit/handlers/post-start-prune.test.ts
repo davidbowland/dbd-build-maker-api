@@ -34,24 +34,28 @@ describe('post-start-prune', () => {
   describe('postStartPruneHandler', () => {
     test('expect INTERNAL_SERVER_ERROR when scanExpiredBuildIds rejects', async () => {
       mocked(dynamodb).scanExpiredBuildIds.mockRejectedValueOnce(undefined)
+
       const result = await postStartPruneHandler(event)
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
     test('expect INTERNAL_SERVER_ERROR when deleteBuildById rejects', async () => {
       mocked(dynamodb).deleteBuildById.mockRejectedValueOnce(undefined)
+
       const result = await postStartPruneHandler(event)
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
     test('expect INTERNAL_SERVER_ERROR when scanExpiredTokens rejects', async () => {
       mocked(dynamodb).scanExpiredTokens.mockRejectedValueOnce(undefined)
+
       const result = await postStartPruneHandler(event)
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
     test('expect INTERNAL_SERVER_ERROR when deleteTokenById rejects', async () => {
       mocked(dynamodb).deleteTokenById.mockRejectedValueOnce(undefined)
+
       const result = await postStartPruneHandler(event)
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
@@ -79,8 +83,8 @@ describe('post-start-prune', () => {
         { data: { ...channel, lastModified: new Date().getTime() }, id: keptChannelId },
       ]
       mocked(dynamodb).scanChannels.mockResolvedValueOnce(returnedChannels)
-      await postStartPruneHandler(event)
 
+      await postStartPruneHandler(event)
       expect(mocked(dynamodb).deleteChannelById).toHaveBeenCalledWith(deletedChannelId)
       expect(mocked(dynamodb).deleteChannelById).toHaveBeenCalledTimes(1)
     })

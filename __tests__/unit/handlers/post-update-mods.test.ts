@@ -16,7 +16,18 @@ jest.mock('@utils/logging')
 
 describe('post-update-mods', () => {
   const event = eventJson as unknown as APIGatewayProxyEventV2
-  const newMods = ['newMod1', 'newMod2']
+  const newMods = [
+    {
+      user_id: '12345',
+      user_login: 'newMod1',
+      user_name: 'newMod1',
+    },
+    {
+      user_id: '67890',
+      user_login: 'newMod2',
+      user_name: 'newMod2',
+    },
+  ]
 
   beforeAll(() => {
     mocked(dynamodb).getChannelById.mockResolvedValue(channel)
@@ -30,42 +41,49 @@ describe('post-update-mods', () => {
       mocked(events).extractTokenFromEvent.mockImplementationOnce(() => {
         throw new Error()
       })
+
       const result = await postUpdateModsHandler(event)
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
     test('expect INTERNAL_SERVER_ERROR when validateToken rejects', async () => {
       mocked(twitch).validateToken.mockRejectedValueOnce(undefined)
+
       const result = await postUpdateModsHandler(event)
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
     test('expect FORBIDDEN when token is invalid', async () => {
       mocked(twitch).validateToken.mockResolvedValueOnce(undefined)
+
       const result = await postUpdateModsHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
     test("expect FORBIDDEN when user doesn't match channel", async () => {
       mocked(twitch).validateToken.mockResolvedValueOnce({ ...user, id: 'not-valid' })
+
       const result = await postUpdateModsHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
     test('expect NOT_FOUND when getChannelById rejects', async () => {
       mocked(dynamodb).getChannelById.mockRejectedValueOnce(undefined)
+
       const result = await postUpdateModsHandler(event)
       expect(result).toEqual(status.NOT_FOUND)
     })
 
     test('expect INTERNAL_SERVER_ERROR when getChannelMods rejects', async () => {
       mocked(twitch).getChannelMods.mockRejectedValueOnce(undefined)
+
       const result = await postUpdateModsHandler(event)
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })
 
     test('expect INTERNAL_SERVER_ERROR when setChannelById rejects', async () => {
       mocked(dynamodb).setChannelById.mockRejectedValueOnce(undefined)
+
       const result = await postUpdateModsHandler(event)
       expect(result).toEqual(expect.objectContaining(status.INTERNAL_SERVER_ERROR))
     })

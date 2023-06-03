@@ -1,10 +1,12 @@
 import { APIGatewayProxyEventV2, Build, PatchOperation } from '../types'
-import buildOptions from '../assets/build-options.json'
 import { buildUncompletedExpireDuration } from '../config'
+import { getActiveBuildOptions } from './build-options'
 
 /* DBD Build Maker */
 
-export const formatBuild = (build: Build, disabledOptions: string[]): Build => {
+export const formatBuild = async (build: Build, disabledOptions: string[]): Promise<Build> => {
+  const buildOptions = await getActiveBuildOptions()
+
   const isKiller = Object.keys(buildOptions.Killers).indexOf(build.character) >= 0
   if (
     (isKiller && disabledOptions.indexOf('Killers') !== -1) ||
@@ -107,7 +109,7 @@ const parseEventBody = (event: APIGatewayProxyEventV2): any =>
     event.isBase64Encoded && event.body ? Buffer.from(event.body, 'base64').toString('utf8') : (event.body as string)
   )
 
-export const extractBuildFromEvent = (event: APIGatewayProxyEventV2, disabledOptions: string[]): Build =>
+export const extractBuildFromEvent = async (event: APIGatewayProxyEventV2, disabledOptions: string[]): Promise<Build> =>
   formatBuild(parseEventBody(event) as Build, disabledOptions)
 
 export const extractJsonPatchFromEvent = (event: APIGatewayProxyEventV2): PatchOperation[] =>

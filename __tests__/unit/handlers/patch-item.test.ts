@@ -27,18 +27,21 @@ describe('patch-item', () => {
   describe('patchItemHandler', () => {
     test('expect INTERNAL_SERVER_ERROR on getUserFromEvent reject', async () => {
       mocked(twitch).getUserFromEvent.mockRejectedValueOnce(undefined)
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
     test('expect FORBIDDEN when getUserFromEvent returns undefined', async () => {
       mocked(twitch).getUserFromEvent.mockResolvedValueOnce(undefined)
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
     test("expect FORBIDDEN when user doesn't match channel", async () => {
       mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93842, id: 'not-valid', name: 'whatever' })
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
@@ -47,6 +50,7 @@ describe('patch-item', () => {
       mocked(events).extractJsonPatchFromEvent.mockImplementationOnce(() => {
         throw new Error('Bad request')
       })
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(expect.objectContaining({ statusCode: status.BAD_REQUEST.statusCode }))
     })
@@ -55,6 +59,7 @@ describe('patch-item', () => {
       mocked(events).extractJsonPatchFromEvent.mockReturnValueOnce([
         { op: 'add', path: '/notes' },
       ] as unknown[] as PatchOperation[])
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(expect.objectContaining({ statusCode: status.BAD_REQUEST.statusCode }))
     })
@@ -63,6 +68,7 @@ describe('patch-item', () => {
       mocked(events).extractJsonPatchFromEvent.mockImplementationOnce(() => {
         throw new Error('Bad request')
       })
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(expect.objectContaining({ statusCode: status.BAD_REQUEST.statusCode }))
     })
@@ -71,24 +77,28 @@ describe('patch-item', () => {
       mocked(events).extractJsonPatchFromEvent.mockReturnValueOnce([
         { op: 'add', path: '/fnord' },
       ] as unknown[] as PatchOperation[])
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
     test('expect OK when mod name matches channel', async () => {
       mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93842, id: '269300532', name: 'mod1' })
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(expect.objectContaining(status.OK))
     })
 
     test('expect NOT_FOUND on getChannelById reject', async () => {
       mocked(dynamodb).getChannelById.mockRejectedValueOnce(undefined)
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(expect.objectContaining(status.NOT_FOUND))
     })
 
     test('expect INTERNAL_SERVER_ERROR on setChannelById reject', async () => {
       mocked(dynamodb).setChannelById.mockRejectedValueOnce(undefined)
+
       const result = await patchItemHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })

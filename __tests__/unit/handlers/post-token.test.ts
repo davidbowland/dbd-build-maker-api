@@ -32,24 +32,28 @@ describe('post-token', () => {
       mocked(events).extractSubmitterFromEvent.mockImplementationOnce(() => {
         throw new Error('Bad request')
       })
+
       const result = await postTokenHandler(event)
       expect(result).toEqual(expect.objectContaining(status.BAD_REQUEST))
     })
 
     test('expect INTERNAL_SERVER_ERROR on getUserFromEvent reject', async () => {
       mocked(twitch).getUserFromEvent.mockRejectedValueOnce(undefined)
+
       const result = await postTokenHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
     test("expect FORBIDDEN on when user doesn't match channel", async () => {
       mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 234242, id: 'not-valid', name: 'whatever' })
+
       const result = await postTokenHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
     test('expect CREATED when user is mod of channel', async () => {
       mocked(twitch).getUserFromEvent.mockResolvedValueOnce({ expiresIn: 93495, id: '269300532', name: 'mod1' })
+
       const result = await postTokenHandler(event)
       expect(result).toEqual(expect.objectContaining(status.CREATED))
     })
@@ -66,6 +70,7 @@ describe('post-token', () => {
 
     test('expect INTERNAL_SERVER_ERROR on setTokenById reject', async () => {
       mocked(dynamodb).setTokenById.mockRejectedValueOnce(undefined)
+
       const result = await postTokenHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })

@@ -20,6 +20,7 @@ describe('get-all-builds', () => {
   describe('getAllBuildsHandler', () => {
     test('expect INTERNAL_SERVER_ERROR on scanSessions reject', async () => {
       mocked(dynamodb).queryBuildsByChannelId.mockRejectedValueOnce(undefined)
+
       const result = await getAllBuildsHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })

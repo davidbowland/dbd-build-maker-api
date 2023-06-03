@@ -20,6 +20,7 @@ describe('get-build-by-id', () => {
   describe('getBuildByIdHandler', () => {
     test('expect NOT_FOUND when getBuildById rejects', async () => {
       mocked(dynamodb).getBuildById.mockRejectedValueOnce(undefined)
+
       const result = await getBuildByIdHandler(event)
       expect(result).toEqual(status.NOT_FOUND)
     })

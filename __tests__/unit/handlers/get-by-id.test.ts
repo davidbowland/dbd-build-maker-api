@@ -20,6 +20,7 @@ describe('get-by-id', () => {
   describe('getByIdHandler', () => {
     test('expect NOT_FOUND on getSessionById reject', async () => {
       mocked(dynamodb).getChannelById.mockRejectedValueOnce(undefined)
+
       const result = await getByIdHandler(event)
       expect(result).toEqual(status.NOT_FOUND)
     })

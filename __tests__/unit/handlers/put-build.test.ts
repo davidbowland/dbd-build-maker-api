@@ -18,26 +18,27 @@ describe('put-build', () => {
   beforeAll(() => {
     mocked(dynamodb).getChannelById.mockResolvedValue(channel)
     mocked(dynamodb).getTokenById.mockResolvedValue({ submitter })
-    mocked(events).extractBuildFromEvent.mockReturnValue(buildKiller)
+    mocked(events).extractBuildFromEvent.mockResolvedValue(buildKiller)
   })
 
   describe('putBuildHandler', () => {
     test('expect FORBIDDEN when getTokenById rejects', async () => {
       mocked(dynamodb).getTokenById.mockRejectedValueOnce(undefined)
+
       const result = await putBuildHandler(event)
       expect(result).toEqual(status.FORBIDDEN)
     })
 
     test('expect INTERNAL_SERVER_ERROR when getChannelById rejects', async () => {
       mocked(dynamodb).getChannelById.mockRejectedValueOnce(undefined)
+
       const result = await putBuildHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
     test('expect BAD_REQUEST when extract build fails', async () => {
-      mocked(events).extractBuildFromEvent.mockImplementationOnce(() => {
-        throw new Error('Bad request')
-      })
+      mocked(events).extractBuildFromEvent.mockRejectedValueOnce(new Error('Bad request'))
+
       const result = await putBuildHandler(event)
       expect(result).toEqual(expect.objectContaining(status.BAD_REQUEST))
     })
@@ -54,12 +55,14 @@ describe('put-build', () => {
 
     test('expect INTERNAL_SERVER_ERROR on setBuildById reject', async () => {
       mocked(dynamodb).setBuildById.mockRejectedValueOnce(undefined)
+
       const result = await putBuildHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })
 
     test('expect INTERNAL_SERVER_ERROR on deleteTokenById reject', async () => {
       mocked(dynamodb).deleteTokenById.mockRejectedValueOnce(undefined)
+
       const result = await putBuildHandler(event)
       expect(result).toEqual(status.INTERNAL_SERVER_ERROR)
     })

@@ -20,6 +20,7 @@ describe('get-token-by-id', () => {
   describe('getTokenByIdHandler', () => {
     test('expect NOT_FOUND when getTokenById rejects', async () => {
       mocked(dynamodb).getTokenById.mockRejectedValueOnce(undefined)
+
       const result = await getTokenByIdHandler(event)
       expect(result).toEqual(status.NOT_FOUND)
     })
