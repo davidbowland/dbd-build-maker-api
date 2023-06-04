@@ -7,15 +7,10 @@ import { getNextToken } from '@utils/token-generator'
 jest.mock('@services/dynamodb')
 
 describe('id-generator', () => {
-  const mathRandom = Math.random
   const mockRandom = jest.fn()
 
   beforeAll(() => {
     Math.random = mockRandom.mockReturnValue(0.5)
-  })
-
-  afterAll(() => {
-    Math.random = mathRandom
   })
 
   describe('getNextId', () => {

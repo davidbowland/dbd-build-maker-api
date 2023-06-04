@@ -7,49 +7,46 @@ import { getActiveBuildOptions } from './build-options'
 export const formatBuild = async (build: Build, disabledOptions: string[]): Promise<Build> => {
   const buildOptions = await getActiveBuildOptions()
 
-  const isKiller = Object.keys(buildOptions.Killers).indexOf(build.character) >= 0
+  const isKiller = Object.keys(buildOptions.killer.characters).indexOf(build.character) >= 0
   if (
     (isKiller && disabledOptions.indexOf('Killers') !== -1) ||
-    (!isKiller && (disabledOptions.indexOf('Survivors') !== -1 || buildOptions.Survivors.indexOf(build.character) < 0))
+    (!isKiller &&
+      (disabledOptions.indexOf('Survivors') !== -1 || buildOptions.survivor.characters.indexOf(build.character) < 0))
   ) {
     throw new Error('"character" has an invalid value')
   }
   if (isKiller) {
-    const killer = buildOptions.Killers[build.character as keyof typeof buildOptions.Killers]
+    const killer = buildOptions.killer.characters[build.character]
     if (disabledOptions.indexOf(build.addon1) !== -1 || killer.indexOf(build.addon1) < 0) {
       throw new Error('"addon1" has an invalid value')
     }
     if (disabledOptions.indexOf(build.addon2) !== -1 || killer.indexOf(build.addon2) < 0) {
       throw new Error('"addon2" has an invalid value')
     }
-    if (
-      disabledOptions.indexOf(build.offering) !== -1 ||
-      buildOptions['Killer Offerings'].indexOf(build.offering) < 0
-    ) {
+    if (disabledOptions.indexOf(build.offering) !== -1 || buildOptions.killer.offerings.indexOf(build.offering) < 0) {
       throw new Error('"offering" has an invalid value')
     }
-    if (disabledOptions.indexOf(build.perk1) !== -1 || buildOptions['Killer Perks'].indexOf(build.perk1) < 0) {
+    if (disabledOptions.indexOf(build.perk1) !== -1 || buildOptions.killer.perks.indexOf(build.perk1) < 0) {
       throw new Error('"perk1" has an invalid value')
     }
-    if (disabledOptions.indexOf(build.perk2) !== -1 || buildOptions['Killer Perks'].indexOf(build.perk2) < 0) {
+    if (disabledOptions.indexOf(build.perk2) !== -1 || buildOptions.killer.perks.indexOf(build.perk2) < 0) {
       throw new Error('"perk2" has an invalid value')
     }
-    if (disabledOptions.indexOf(build.perk3) !== -1 || buildOptions['Killer Perks'].indexOf(build.perk3) < 0) {
+    if (disabledOptions.indexOf(build.perk3) !== -1 || buildOptions.killer.perks.indexOf(build.perk3) < 0) {
       throw new Error('"perk3" has an invalid value')
     }
-    if (disabledOptions.indexOf(build.perk4) !== -1 || buildOptions['Killer Perks'].indexOf(build.perk4) < 0) {
+    if (disabledOptions.indexOf(build.perk4) !== -1 || buildOptions.killer.perks.indexOf(build.perk4) < 0) {
       throw new Error('"perk4" has an invalid value')
     }
   } else {
     if (
       build.item &&
-      (disabledOptions.indexOf(build.item) !== -1 ||
-        Object.keys(buildOptions['Survivor Items']).indexOf(build.item) < 0)
+      (disabledOptions.indexOf(build.item) !== -1 || Object.keys(buildOptions.survivor.items).indexOf(build.item) < 0)
     ) {
       throw new Error('"item" has an invalid value')
     }
     if (build.item && build.item !== 'None') {
-      const item = buildOptions['Survivor Items'][build.item as keyof (typeof buildOptions)['Survivor Items']]
+      const item = buildOptions.survivor.items[build.item]
       if (disabledOptions.indexOf(build.addon1) !== -1 || item.indexOf(build.addon1) < 0) {
         throw new Error('"addon1" has an invalid value')
       }
@@ -61,22 +58,19 @@ export const formatBuild = async (build: Build, disabledOptions: string[]): Prom
         throw new Error('addons are invalid without an item')
       }
     }
-    if (
-      disabledOptions.indexOf(build.offering) !== -1 ||
-      buildOptions['Survivor Offerings'].indexOf(build.offering) < 0
-    ) {
+    if (disabledOptions.indexOf(build.offering) !== -1 || buildOptions.survivor.offerings.indexOf(build.offering) < 0) {
       throw new Error('"offering" has an invalid value')
     }
-    if (disabledOptions.indexOf(build.perk1) !== -1 || buildOptions['Survivor Perks'].indexOf(build.perk1) < 0) {
+    if (disabledOptions.indexOf(build.perk1) !== -1 || buildOptions.survivor.perks.indexOf(build.perk1) < 0) {
       throw new Error('"perk1" has an invalid value')
     }
-    if (disabledOptions.indexOf(build.perk2) !== -1 || buildOptions['Survivor Perks'].indexOf(build.perk2) < 0) {
+    if (disabledOptions.indexOf(build.perk2) !== -1 || buildOptions.survivor.perks.indexOf(build.perk2) < 0) {
       throw new Error('"perk2" has an invalid value')
     }
-    if (disabledOptions.indexOf(build.perk3) !== -1 || buildOptions['Survivor Perks'].indexOf(build.perk3) < 0) {
+    if (disabledOptions.indexOf(build.perk3) !== -1 || buildOptions.survivor.perks.indexOf(build.perk3) < 0) {
       throw new Error('"perk3" has an invalid value')
     }
-    if (disabledOptions.indexOf(build.perk4) !== -1 || buildOptions['Survivor Perks'].indexOf(build.perk4) < 0) {
+    if (disabledOptions.indexOf(build.perk4) !== -1 || buildOptions.survivor.perks.indexOf(build.perk4) < 0) {
       throw new Error('"perk4" has an invalid value')
     }
   }

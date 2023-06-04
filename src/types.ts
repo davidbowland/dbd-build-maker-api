@@ -23,10 +23,6 @@ export interface BuildBatch {
   id: string
 }
 
-export interface BuildOptions {
-  [key: string]: any
-}
-
 export interface ChannelCounts {
   completed: number
   pending: number
@@ -77,4 +73,38 @@ export interface User {
   expiresIn: number
   id: string
   name: string
+}
+
+/* Build options */
+
+export type Addons = string[]
+
+export interface KillerCharacters {
+  [key: string]: Addons
+}
+
+export interface Items {
+  [key: string]: Addons
+}
+
+export type SurvivorCharacters = string[]
+export type Offerings = string[]
+export type Perks = string[]
+
+export interface Killer {
+  characters: KillerCharacters
+  offerings: Offerings
+  perks: Perks
+}
+
+export interface Survivor {
+  characters: SurvivorCharacters
+  items: Items
+  offerings: Offerings
+  perks: Perks
+}
+
+export interface BuildOptions {
+  killer: Killer
+  survivor: Survivor
 }
