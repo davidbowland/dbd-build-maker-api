@@ -2,6 +2,7 @@ import { mocked } from 'jest-mock'
 
 import * as dynamodb from '@services/dynamodb'
 import * as events from '@utils/events'
+import * as logging from '@utils/logging'
 import { buildId, buildKiller, channel, channelId, submitter } from '../__mocks__'
 import { APIGatewayProxyEventV2 } from '@types'
 import eventJson from '@events/put-build.json'
@@ -19,6 +20,7 @@ describe('put-build', () => {
     mocked(dynamodb).getChannelById.mockResolvedValue(channel)
     mocked(dynamodb).getTokenById.mockResolvedValue({ submitter })
     mocked(events).extractBuildFromEvent.mockResolvedValue(buildKiller)
+    mocked(logging).extractRequestError.mockImplementation((str) => ({ message: str }))
   })
 
   describe('putBuildHandler', () => {

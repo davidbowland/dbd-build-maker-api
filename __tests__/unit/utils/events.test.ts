@@ -1,3 +1,4 @@
+import * as buildOptions from '@utils/build-options'
 import { APIGatewayProxyEventV2, Build } from '@types'
 import { buildKiller, buildSurvivor, jsonPatchOperations, submitter } from '../__mocks__'
 import {
@@ -6,10 +7,16 @@ import {
   extractSubmitterFromEvent,
   extractTokenFromEvent,
   formatBuild,
+  formatSubmitter,
+  SubmitterSchema,
 } from '@utils/events'
+import buildOptionsAsset from '@assets/build-options-chapter-24'
+import { mocked } from 'jest-mock'
 import patchEventJson from '@events/patch-item.json'
 import postEventJson from '@events/post-token.json'
 import putEventJson from '@events/put-build.json'
+
+jest.mock('@utils/build-options')
 
 describe('events', () => {
   const disabledOptions = [
@@ -24,6 +31,10 @@ describe('events', () => {
     'Aftercare',
   ]
 
+  beforeAll(() => {
+    mocked(buildOptions).getActiveBuildOptions.mockResolvedValue(buildOptionsAsset)
+  })
+
   describe('formatBuild', () => {
     test.each([undefined, 'Fnord', 'Blight', 'Ashley J. Williams'])(
       'expect error on invalid character - %s',
@@ -34,6 +45,11 @@ describe('events', () => {
     )
 
     /* Killer */
+
+    test('expect error when killer disabled', async () => {
+      const killerDisabledOptions = ['Killers']
+      await expect(formatBuild(buildKiller, killerDisabledOptions)).rejects.toThrow()
+    })
 
     test.each([undefined, 'Fnord', 'Adrenaline Vial'])(
       'expect error on invalid addon1, killer - %s',
@@ -80,6 +96,11 @@ describe('events', () => {
     })
 
     /* Survivor */
+
+    test('expect error when survivor disabled', async () => {
+      const survivorDisabledOptions = ['Survivors']
+      await expect(formatBuild(buildSurvivor, survivorDisabledOptions)).rejects.toThrow()
+    })
 
     test.each([undefined, 'Fnord', 'Key'])('expect error on invalid item - %s', async (item) => {
       const invalidBuild = { ...buildSurvivor, item }
@@ -155,6 +176,21 @@ describe('events', () => {
     })
   })
 
+  describe('formatSubmitter', () => {
+    test('expect submitter when payload valid', async () => {
+      const payload: SubmitterSchema = { submitter: 'cfb' }
+
+      const result = formatSubmitter(payload)
+      expect(result).toEqual('cfb')
+    })
+
+    test('expect thrown exception when payload invalid', async () => {
+      const payload = { invalid: 'value' } as unknown as SubmitterSchema
+
+      expect(() => formatSubmitter(payload)).toThrow()
+    })
+  })
+
   describe('extractBuildFromEvent', () => {
     const event = putEventJson as unknown as APIGatewayProxyEventV2
 
@@ -173,17 +209,6 @@ describe('events', () => {
     test('expect reject on invalid event', async () => {
       const tempEvent = { ...event, body: JSON.stringify({}) } as unknown as APIGatewayProxyEventV2
       await expect(extractBuildFromEvent(tempEvent, disabledOptions)).rejects.toThrow()
-    })
-
-    test('expect build to be formatted', async () => {
-      const tempBuild = {
-        ...buildKiller,
-        foo: 'bar',
-      }
-      const tempEvent = { ...event, body: JSON.stringify(tempBuild) } as unknown as APIGatewayProxyEventV2
-
-      const result = await extractBuildFromEvent(tempEvent, disabledOptions)
-      expect(result).toEqual(expect.objectContaining(buildKiller))
     })
   })
 

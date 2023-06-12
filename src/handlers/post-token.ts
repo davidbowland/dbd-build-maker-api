@@ -1,6 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2 } from '../types'
+import { extractRequestError, log, logError } from '../utils/logging'
 import { getChannelById, setTokenById } from '../services/dynamodb'
-import { log, logError } from '../utils/logging'
 import { extractSubmitterFromEvent } from '../utils/events'
 import { getNextToken } from '../utils/token-generator'
 import { getUserFromEvent } from '../services/twitch'
@@ -39,6 +39,6 @@ export const postTokenHandler = async (event: APIGatewayProxyEventV2): Promise<A
       return status.INTERNAL_SERVER_ERROR
     }
   } catch (error: any) {
-    return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
+    return { ...status.BAD_REQUEST, body: JSON.stringify(extractRequestError(error.message)) }
   }
 }

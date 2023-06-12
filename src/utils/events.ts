@@ -1,91 +1,103 @@
-import { APIGatewayProxyEventV2, Build, PatchOperation } from '../types'
+import { APIGatewayProxyEventV2, Build, BuildOptions, PatchOperation } from '../types'
+import AJV from 'ajv/dist/jtd'
 import { buildUncompletedExpireDuration } from '../config'
 import { getActiveBuildOptions } from './build-options'
 
-/* DBD Build Maker */
+const ajv = new AJV({ allErrors: true })
+
+export interface BuildSchema extends Omit<Build, 'expiration' | 'submitter'> {
+  expiration?: number
+}
+
+export interface SubmitterSchema {
+  submitter: string
+}
+
+export interface ValidBuildValues {
+  addons: string[]
+  items: string[]
+  offerings: string[]
+  perks: string[]
+}
+
+/* Formatting */
 
 export const formatBuild = async (build: Build, disabledOptions: string[]): Promise<Build> => {
   const buildOptions = await getActiveBuildOptions()
 
-  const isKiller = Object.keys(buildOptions.killer.characters).indexOf(build.character) >= 0
-  if (
-    (isKiller && disabledOptions.indexOf('Killers') !== -1) ||
-    (!isKiller &&
-      (disabledOptions.indexOf('Survivors') !== -1 || buildOptions.survivor.characters.indexOf(build.character) < 0))
-  ) {
-    throw new Error('"character" has an invalid value')
-  }
-  if (isKiller) {
-    const killer = buildOptions.killer.characters[build.character]
-    if (disabledOptions.indexOf(build.addon1) !== -1 || killer.indexOf(build.addon1) < 0) {
-      throw new Error('"addon1" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.addon2) !== -1 || killer.indexOf(build.addon2) < 0) {
-      throw new Error('"addon2" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.offering) !== -1 || buildOptions.killer.offerings.indexOf(build.offering) < 0) {
-      throw new Error('"offering" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.perk1) !== -1 || buildOptions.killer.perks.indexOf(build.perk1) < 0) {
-      throw new Error('"perk1" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.perk2) !== -1 || buildOptions.killer.perks.indexOf(build.perk2) < 0) {
-      throw new Error('"perk2" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.perk3) !== -1 || buildOptions.killer.perks.indexOf(build.perk3) < 0) {
-      throw new Error('"perk3" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.perk4) !== -1 || buildOptions.killer.perks.indexOf(build.perk4) < 0) {
-      throw new Error('"perk4" has an invalid value')
-    }
-  } else {
-    if (
-      build.item &&
-      (disabledOptions.indexOf(build.item) !== -1 || Object.keys(buildOptions.survivor.items).indexOf(build.item) < 0)
-    ) {
-      throw new Error('"item" has an invalid value')
-    }
-    if (build.item && build.item !== 'None') {
-      const item = buildOptions.survivor.items[build.item]
-      if (disabledOptions.indexOf(build.addon1) !== -1 || item.indexOf(build.addon1) < 0) {
-        throw new Error('"addon1" has an invalid value')
-      }
-      if (disabledOptions.indexOf(build.addon2) !== -1 || item.indexOf(build.addon2) < 0) {
-        throw new Error('"addon2" has an invalid value')
-      }
-    } else {
-      if (build.addon1 !== 'None' || build.addon2 !== 'None') {
-        throw new Error('addons are invalid without an item')
+  const isOptionEnabled = (option: string): boolean => disabledOptions.indexOf(option) === -1
+
+  const getValidBuildValues = (buildOptions: BuildOptions, build: Build): ValidBuildValues => {
+    const isKiller = Object.keys(buildOptions.killer.characters).indexOf(build.character) >= 0
+    if (isKiller) {
+      const killer = buildOptions.killer.characters[build.character]
+      return {
+        addons: killer.filter(isOptionEnabled),
+        items: ['Any', 'None'],
+        offerings: buildOptions.killer.offerings.filter(isOptionEnabled),
+        perks: buildOptions.killer.perks.filter(isOptionEnabled),
       }
     }
-    if (disabledOptions.indexOf(build.offering) !== -1 || buildOptions.survivor.offerings.indexOf(build.offering) < 0) {
-      throw new Error('"offering" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.perk1) !== -1 || buildOptions.survivor.perks.indexOf(build.perk1) < 0) {
-      throw new Error('"perk1" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.perk2) !== -1 || buildOptions.survivor.perks.indexOf(build.perk2) < 0) {
-      throw new Error('"perk2" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.perk3) !== -1 || buildOptions.survivor.perks.indexOf(build.perk3) < 0) {
-      throw new Error('"perk3" has an invalid value')
-    }
-    if (disabledOptions.indexOf(build.perk4) !== -1 || buildOptions.survivor.perks.indexOf(build.perk4) < 0) {
-      throw new Error('"perk4" has an invalid value')
+
+    return {
+      addons: (build.item ? buildOptions.survivor.items[build.item] : ['None']).filter(isOptionEnabled),
+      items: Object.keys(buildOptions.survivor.items).filter(isOptionEnabled),
+      offerings: buildOptions.survivor.offerings.filter(isOptionEnabled),
+      perks: buildOptions.survivor.perks.filter(isOptionEnabled),
     }
   }
-  const lastExpiration = new Date().getTime() + buildUncompletedExpireDuration
-  if (build.expiration !== undefined && build.expiration > lastExpiration) {
-    throw new Error('expiration is outside acceptable range')
+
+  const characters = (isOptionEnabled('Killers') ? Object.keys(buildOptions.killer.characters) : [])
+    .concat(isOptionEnabled('Survivors') ? buildOptions.survivor.characters : [])
+    .filter((character) => disabledOptions.indexOf(character) === -1)
+  const maximumExpiration = new Date().getTime() + buildUncompletedExpireDuration
+  const { addons, items, offerings, perks } = getValidBuildValues(buildOptions, build)
+
+  const notesDefinition = isOptionEnabled('Notes') ? { notes: { type: 'string' } } : {}
+  const jsonTypeDefinition = {
+    optionalProperties: {
+      completed: {
+        type: 'float64',
+      },
+      expiration: {
+        type: 'float64',
+      },
+      item: { enum: items },
+      ...notesDefinition,
+    },
+    properties: {
+      addon1: { enum: addons },
+      addon2: { enum: addons },
+      character: { enum: [...new Set(characters)] }, // Characters has 'Any' twice, one from killers and one survivors
+      offering: { enum: offerings },
+      perk1: { enum: perks },
+      perk2: { enum: perks },
+      perk3: { enum: perks },
+      perk4: { enum: perks },
+    },
   }
-  if (disabledOptions.indexOf('Notes') !== -1 && build.notes) {
-    throw new Error('"notes has an invalid value')
+
+  if (ajv.validate(jsonTypeDefinition, build) === false) {
+    throw new Error(JSON.stringify(ajv.errors))
+  } else if ((build.expiration ?? 0) > maximumExpiration) {
+    throw new Error(
+      JSON.stringify([
+        {
+          instancePath: '/expiration',
+          keyword: 'value',
+          message: 'must be less than the maximum allowed value',
+          params: { maximum: [maximumExpiration] },
+          schemaPath: '/properties/expiration/value',
+        },
+      ])
+    )
   }
+
   return {
     addon1: build.addon1,
     addon2: build.addon2,
     character: build.character,
-    expiration: build.expiration ?? lastExpiration,
+    expiration: build.expiration ?? maximumExpiration,
     item: build.item,
     notes: build.notes,
     offering: build.offering,
@@ -94,6 +106,20 @@ export const formatBuild = async (build: Build, disabledOptions: string[]): Prom
     perk3: build.perk3,
     perk4: build.perk4,
   }
+}
+
+const submitterDefinition = {
+  properties: {
+    submitter: { type: 'string' },
+  },
+}
+
+export const formatSubmitter = (submitter: SubmitterSchema): string => {
+  if (ajv.validate(submitterDefinition, submitter) === false) {
+    throw new Error(JSON.stringify(ajv.errors))
+  }
+
+  return submitter.submitter
 }
 
 /* Event */
@@ -109,7 +135,8 @@ export const extractBuildFromEvent = async (event: APIGatewayProxyEventV2, disab
 export const extractJsonPatchFromEvent = (event: APIGatewayProxyEventV2): PatchOperation[] =>
   parseEventBody(event) as PatchOperation[]
 
-export const extractSubmitterFromEvent = (event: APIGatewayProxyEventV2): string => parseEventBody(event).submitter
+export const extractSubmitterFromEvent = (event: APIGatewayProxyEventV2): string =>
+  formatSubmitter(parseEventBody(event) as SubmitterSchema)
 
 export const extractTokenFromEvent = (event: APIGatewayProxyEventV2): string =>
   event.headers['x-twitch-token'] as string

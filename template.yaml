@@ -117,7 +117,7 @@ Resources:
     Properties:
       Handler: handlers/delete-item.deleteByIdHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -180,7 +180,7 @@ Resources:
     Properties:
       Handler: handlers/get-all-items.getAllItemsHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -243,7 +243,7 @@ Resources:
     Properties:
       Handler: handlers/get-all-builds.getAllBuildsHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -306,7 +306,7 @@ Resources:
     Properties:
       Handler: handlers/get-by-id.getByIdHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -369,7 +369,7 @@ Resources:
     Properties:
       Handler: handlers/get-build-by-id.getBuildByIdHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -432,7 +432,7 @@ Resources:
     Properties:
       Handler: handlers/get-build-options.getBuildOptionsHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -492,7 +492,7 @@ Resources:
     Properties:
       Handler: handlers/get-token-by-id.getTokenByIdHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -555,7 +555,7 @@ Resources:
     Properties:
       Handler: handlers/get-twitch-validate-token.getTwitchValidateTokenHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -615,7 +615,7 @@ Resources:
     Properties:
       Handler: handlers/patch-item.patchItemHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -678,7 +678,7 @@ Resources:
     Properties:
       Handler: handlers/patch-build.patchBuildHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -746,10 +746,10 @@ Resources:
     Properties:
       Handler: handlers/put-build.putBuildHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
-      MemorySize: 128
+      MemorySize: 192
       Description: dbd-build-maker-api put build
       Policies:
         - AWSLambdaBasicExecutionRole
@@ -816,7 +816,7 @@ Resources:
     Properties:
       Handler: handlers/post-item.postItemHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -882,10 +882,10 @@ Resources:
     Properties:
       Handler: handlers/post-token.postTokenHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
-      MemorySize: 128
+      MemorySize: 192
       Description: dbd-build-maker-api post token
       Policies:
         - AWSLambdaBasicExecutionRole
@@ -954,7 +954,7 @@ Resources:
     Properties:
       Handler: handlers/post-start-prune.postStartPruneHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -1018,7 +1018,7 @@ Resources:
     Properties:
       Handler: handlers/post-update-mods.postUpdateModsHandler
       CodeUri: './dist'
-      Runtime: nodejs16.x
+      Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128

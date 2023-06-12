@@ -2,6 +2,7 @@ import { mocked } from 'jest-mock'
 
 import * as dynamodb from '@services/dynamodb'
 import * as events from '@utils/events'
+import * as logging from '@utils/logging'
 import * as tokenGenerator from '@utils/token-generator'
 import * as twitch from '@services/twitch'
 import { buildToken, channel, channelId, submitter, twitchAuthToken, user } from '../__mocks__'
@@ -23,6 +24,7 @@ describe('post-token', () => {
     mocked(dynamodb).getChannelById.mockResolvedValue(channel)
     mocked(events).extractSubmitterFromEvent.mockReturnValue(submitter)
     mocked(events).extractTokenFromEvent.mockReturnValue(twitchAuthToken)
+    mocked(logging).extractRequestError.mockImplementation((str) => ({ message: str }))
     mocked(tokenGenerator).getNextToken.mockResolvedValue(buildToken)
     mocked(twitch).getUserFromEvent.mockResolvedValue(user)
   })

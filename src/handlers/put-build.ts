@@ -1,6 +1,6 @@
 import { APIGatewayProxyEventV2, APIGatewayProxyResultV2, Build } from '../types'
 import { deleteTokenById, getChannelById, getTokenById, setBuildById, updateChannelCounts } from '../services/dynamodb'
-import { log, logError } from '../utils/logging'
+import { extractRequestError, log, logError } from '../utils/logging'
 import { extractBuildFromEvent } from '../utils/events'
 import status from '../utils/status'
 
@@ -34,13 +34,14 @@ export const putBuildHandler = async (event: APIGatewayProxyEventV2): Promise<AP
         const build = { ...eventBuild, submitter: token.submitter }
         return await confirmBuild(channelId, buildId, build)
       } catch (error: any) {
-        return { ...status.BAD_REQUEST, body: JSON.stringify({ message: error.message }) }
+        return { ...status.BAD_REQUEST, body: JSON.stringify(extractRequestError(error.message)) }
       }
     } catch (error) {
       logError(error)
       return status.INTERNAL_SERVER_ERROR
     }
   } catch (error) {
+    logError(error)
     return status.FORBIDDEN
   }
 }
