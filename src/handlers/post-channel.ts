@@ -26,7 +26,7 @@ const createNewChannel = async (channelId: string, token: string): Promise<APIGa
   }
 }
 
-export const postItemHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
+export const postChannelHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
   try {
     const token = extractTokenFromEvent(event)

@@ -20,7 +20,9 @@ const fetchDataThenDelete = async (channelId: string): Promise<APIGatewayProxyRe
   }
 }
 
-export const deleteByIdHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<Channel>> => {
+export const deleteChannelByIdHandler = async (
+  event: APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResultV2<Channel>> => {
   log('Received event', { ...event, body: undefined })
   try {
     const channelId = event.pathParameters?.channelId as string

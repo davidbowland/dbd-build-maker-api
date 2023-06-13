@@ -12,7 +12,9 @@ const fetchById = async (channelId: string): Promise<APIGatewayProxyResultV2<Cha
   }
 }
 
-export const getByIdHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<Channel>> => {
+export const getChannelByIdHandler = async (
+  event: APIGatewayProxyEventV2
+): Promise<APIGatewayProxyResultV2<Channel>> => {
   log('Received event', { ...event, body: undefined })
   const channelId = event.pathParameters?.channelId as string
   return await fetchById(channelId)

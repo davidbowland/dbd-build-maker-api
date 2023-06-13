@@ -112,16 +112,16 @@ Resources:
 
   # Lambda
 
-  DeleteItemFunction:
+  DeleteChannelFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/delete-item.deleteByIdHandler
+      Handler: handlers/delete-channel.deleteChannelByIdHandler
       CodeUri: './dist'
       Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
-      Description: dbd-build-maker-api delete by ID
+      Description: dbd-build-maker-api delete channel by ID
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
@@ -152,11 +152,11 @@ Resources:
       Timeout: 10
       Tracing: Active
 
-  DeleteItemLogGroup:
+  DeleteChannelLogGroup:
     Type: AWS::Logs::LogGroup
-    DependsOn: DeleteItemFunction
+    DependsOn: DeleteChannelFunction
     Properties:
-      LogGroupName: !Sub /aws/lambda/${DeleteItemFunction}
+      LogGroupName: !Sub /aws/lambda/${DeleteChannelFunction}
       RetentionInDays: 30
       Tags:
         - Key: 'created-by'
@@ -166,77 +166,14 @@ Resources:
         - Key: 'environment'
           Value: !Ref Environment
 
-  DeleteItemLogGroupSubscription:
+  DeleteChannelLogGroupSubscription:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !Sub
         - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
         - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
-      LogGroupName: !Ref DeleteItemLogGroup
-
-  GetAllItemsFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: handlers/get-all-items.getAllItemsHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Description: dbd-build-maker-api get all items
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ChannelTable
-      Environment:
-        Variables:
-          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
-          TWITCH_CLIENT_ID: !Ref TwitchClientId
-      Events:
-        ApiKey:
-          Type: Api
-          Properties:
-            RestApiId: !Ref Api
-            Path: /channels
-            Method: get
-            Auth:
-              ApiKeyRequired: true
-        Http:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /channels
-            Method: get
-      Tags:
-        'created-by': 'dbd-build-maker-api'
-        'created-for': 'dbd-build-maker'
-        'environment': !Ref Environment
-      Timeout: 30
-      Tracing: Active
-
-  GetAllItemsLogGroup:
-    Type: AWS::Logs::LogGroup
-    DependsOn: GetAllItemsFunction
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${GetAllItemsFunction}
-      RetentionInDays: 30
-      Tags:
-        - Key: 'created-by'
-          Value: 'dbd-build-maker-api'
-        - Key: 'created-for'
-          Value: 'dbd-build-maker'
-        - Key: 'environment'
-          Value: !Ref Environment
-
-  GetAllItemsLogGroupSubscription:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !Sub
-        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
-        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
-      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
-      LogGroupName: !Ref GetAllItemsLogGroup
+      LogGroupName: !Ref DeleteChannelLogGroup
 
   GetAllBuildsFunction:
     Type: AWS::Serverless::Function
@@ -301,16 +238,16 @@ Resources:
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
       LogGroupName: !Ref GetAllBuildsLogGroup
 
-  GetByIdFunction:
+  GetAllChannelsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/get-by-id.getByIdHandler
+      Handler: handlers/get-all-channels.getAllChannelsHandler
       CodeUri: './dist'
       Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
-      Description: dbd-build-maker-api get by ID
+      Description: dbd-build-maker-api get all items
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
@@ -324,7 +261,7 @@ Resources:
           Type: Api
           Properties:
             RestApiId: !Ref Api
-            Path: /channels/{channelId}
+            Path: /channels
             Method: get
             Auth:
               ApiKeyRequired: true
@@ -332,20 +269,20 @@ Resources:
           Type: HttpApi
           Properties:
             ApiId: !Ref HttpApi
-            Path: /channels/{channelId}
+            Path: /channels
             Method: get
       Tags:
         'created-by': 'dbd-build-maker-api'
         'created-for': 'dbd-build-maker'
         'environment': !Ref Environment
-      Timeout: 10
+      Timeout: 30
       Tracing: Active
 
-  GetByIdLogGroup:
+  GetAllChannelsLogGroup:
     Type: AWS::Logs::LogGroup
-    DependsOn: GetByIdFunction
+    DependsOn: GetAllChannelsFunction
     Properties:
-      LogGroupName: !Sub /aws/lambda/${GetByIdFunction}
+      LogGroupName: !Sub /aws/lambda/${GetAllChannelsFunction}
       RetentionInDays: 30
       Tags:
         - Key: 'created-by'
@@ -355,14 +292,14 @@ Resources:
         - Key: 'environment'
           Value: !Ref Environment
 
-  GetByIdLogGroupSubscription:
+  GetAllChannelsLogGroupSubscription:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !Sub
         - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
         - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
-      LogGroupName: !Ref GetByIdLogGroup
+      LogGroupName: !Ref GetAllChannelsLogGroup
 
   GetBuildByIdFunction:
     Type: AWS::Serverless::Function
@@ -487,6 +424,69 @@ Resources:
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
       LogGroupName: !Ref GetBuildOptionsLogGroup
 
+  GetChannelByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/get-channel-by-id.getChannelByIdHandler
+      CodeUri: './dist'
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api get by ID
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChannelTable
+      Environment:
+        Variables:
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}
+            Method: get
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}
+            Method: get
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 10
+      Tracing: Active
+
+  GetChannelByIdLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: GetChannelByIdFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${GetChannelByIdFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  GetChannelByIdLogGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref GetChannelByIdLogGroup
+
   GetTokenByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -610,69 +610,6 @@ Resources:
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
       LogGroupName: !Ref GetTwitchTokenLogGroup
 
-  PatchItemFunction:
-    Type: AWS::Serverless::Function
-    Properties:
-      Handler: handlers/patch-item.patchItemHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
-      Architectures:
-        - x86_64
-      MemorySize: 128
-      Description: dbd-build-maker-api patch item
-      Policies:
-        - AWSLambdaBasicExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref ChannelTable
-      Environment:
-        Variables:
-          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
-          TWITCH_CLIENT_ID: !Ref TwitchClientId
-      Events:
-        ApiKey:
-          Type: Api
-          Properties:
-            RestApiId: !Ref Api
-            Path: /channels/{channelId}
-            Method: patch
-            Auth:
-              ApiKeyRequired: true
-        Http:
-          Type: HttpApi
-          Properties:
-            ApiId: !Ref HttpApi
-            Path: /channels/{channelId}
-            Method: patch
-      Tags:
-        'created-by': 'dbd-build-maker-api'
-        'created-for': 'dbd-build-maker'
-        'environment': !Ref Environment
-      Timeout: 15
-      Tracing: Active
-
-  PatchLogGroup:
-    Type: AWS::Logs::LogGroup
-    DependsOn: PatchItemFunction
-    Properties:
-      LogGroupName: !Sub /aws/lambda/${PatchItemFunction}
-      RetentionInDays: 30
-      Tags:
-        - Key: 'created-by'
-          Value: 'dbd-build-maker-api'
-        - Key: 'created-for'
-          Value: 'dbd-build-maker'
-        - Key: 'environment'
-          Value: !Ref Environment
-
-  PatchGroupSubscription:
-    Type: AWS::Logs::SubscriptionFilter
-    Properties:
-      DestinationArn: !Sub
-        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
-        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
-      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
-      LogGroupName: !Ref PatchLogGroup
-
   PatchBuildFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -740,6 +677,69 @@ Resources:
         - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
       LogGroupName: !Ref PatchBuildLogGroup
+
+  PatchChannelFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: handlers/patch-channel.patchChannelHandler
+      CodeUri: './dist'
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 128
+      Description: dbd-build-maker-api patch item
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - DynamoDBCrudPolicy:
+            TableName: !Ref ChannelTable
+      Environment:
+        Variables:
+          DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
+          TWITCH_CLIENT_ID: !Ref TwitchClientId
+      Events:
+        ApiKey:
+          Type: Api
+          Properties:
+            RestApiId: !Ref Api
+            Path: /channels/{channelId}
+            Method: patch
+            Auth:
+              ApiKeyRequired: true
+        Http:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /channels/{channelId}
+            Method: patch
+      Tags:
+        'created-by': 'dbd-build-maker-api'
+        'created-for': 'dbd-build-maker'
+        'environment': !Ref Environment
+      Timeout: 15
+      Tracing: Active
+
+  PatchChannelLogGroup:
+    Type: AWS::Logs::LogGroup
+    DependsOn: PatchChannelFunction
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${PatchChannelFunction}
+      RetentionInDays: 30
+      Tags:
+        - Key: 'created-by'
+          Value: 'dbd-build-maker-api'
+        - Key: 'created-for'
+          Value: 'dbd-build-maker'
+        - Key: 'environment'
+          Value: !Ref Environment
+
+  PatchGroupSubscription:
+    Type: AWS::Logs::SubscriptionFilter
+    Properties:
+      DestinationArn: !Sub
+        - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
+        - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
+      FilterPattern: '[timestamp, uuid, level="ERROR", message]'
+      LogGroupName: !Ref PatchChannelLogGroup
 
   PutBuildFunction:
     Type: AWS::Serverless::Function
@@ -811,16 +811,16 @@ Resources:
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
       LogGroupName: !Ref PutBuildLogGroup
 
-  PostItemFunction:
+  PostChannelFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/post-item.postItemHandler
+      Handler: handlers/post-channel.postChannelHandler
       CodeUri: './dist'
       Runtime: nodejs18.x
       Architectures:
         - x86_64
       MemorySize: 128
-      Description: dbd-build-maker-api post item
+      Description: dbd-build-maker-api post channel
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
@@ -854,11 +854,11 @@ Resources:
       Timeout: 90
       Tracing: Active
 
-  PostLogGroup:
+  PostChannelLogGroup:
     Type: AWS::Logs::LogGroup
-    DependsOn: PostItemFunction
+    DependsOn: PostChannelFunction
     Properties:
-      LogGroupName: !Sub /aws/lambda/${PostItemFunction}
+      LogGroupName: !Sub /aws/lambda/${PostChannelFunction}
       RetentionInDays: 30
       Tags:
         - Key: 'created-by'
@@ -868,14 +868,14 @@ Resources:
         - Key: 'environment'
           Value: !Ref Environment
 
-  PostGroupSubscription:
+  PostChannelLogGroupSubscription:
     Type: AWS::Logs::SubscriptionFilter
     Properties:
       DestinationArn: !Sub
         - 'arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${Function}'
         - Function: !FindInMap [EnvironmentMap, !Ref Environment, logStreamFunction]
       FilterPattern: '[timestamp, uuid, level="ERROR", message]'
-      LogGroupName: !Ref PostLogGroup
+      LogGroupName: !Ref PostChannelLogGroup
 
   PostTokenFunction:
     Type: AWS::Serverless::Function
@@ -992,7 +992,7 @@ Resources:
 
   PostPruneLogGroup:
     Type: AWS::Logs::LogGroup
-    DependsOn: PostItemFunction
+    DependsOn: PostChannelFunction
     Properties:
       LogGroupName: !Sub /aws/lambda/${PostPruneItemFunction}
       RetentionInDays: 30

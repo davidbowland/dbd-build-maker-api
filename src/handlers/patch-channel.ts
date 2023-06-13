@@ -48,7 +48,7 @@ const patchById = async (
   }
 }
 
-export const patchItemHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
+export const patchChannelHandler = async (event: APIGatewayProxyEventV2): Promise<APIGatewayProxyResultV2<any>> => {
   log('Received event', { ...event, body: undefined })
   try {
     const channelId = event.pathParameters?.channelId as string

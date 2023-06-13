@@ -12,7 +12,7 @@ import {
 } from '@utils/events'
 import buildOptionsAsset from '@assets/build-options-chapter-24'
 import { mocked } from 'jest-mock'
-import patchEventJson from '@events/patch-item.json'
+import patchEventJson from '@events/patch-channel.json'
 import postEventJson from '@events/post-token.json'
 import putEventJson from '@events/put-build.json'
 

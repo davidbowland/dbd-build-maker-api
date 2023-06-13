@@ -3,7 +3,7 @@ import { log, logError } from '../utils/logging'
 import { scanChannels } from '../services/dynamodb'
 import status from '../utils/status'
 
-export const getAllItemsHandler = async (
+export const getAllChannelsHandler = async (
   event: APIGatewayProxyEventV2
 ): Promise<APIGatewayProxyResultV2<ChannelBatch[]>> => {
   log('Received event', event)
