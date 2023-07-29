@@ -1,6 +1,6 @@
 {
   "name": "dbd-build-maker-api",
-  "version": "1.18.0",
+  "version": "1.19.0",
   "description": "Lambda DBD build maker API",
   "author": "David Bowland",
   "engines": {
