@@ -42,7 +42,7 @@ describe('dynamodb', () => {
             ChannelId: { S: channelId },
           },
           TableName: 'build-table',
-        })
+        }),
       )
     })
   })
@@ -56,7 +56,7 @@ describe('dynamodb', () => {
             ChannelId: { S: channelId },
           },
           TableName: 'channel-table',
-        })
+        }),
       )
     })
   })
@@ -71,7 +71,7 @@ describe('dynamodb', () => {
             Token: { S: buildToken.value },
           },
           TableName: 'token-table',
-        })
+        }),
       )
     })
   })
@@ -90,7 +90,7 @@ describe('dynamodb', () => {
             ChannelId: { S: channelId },
           },
           TableName: 'build-table',
-        })
+        }),
       )
       expect(result).toEqual(buildKiller)
     })
@@ -109,7 +109,7 @@ describe('dynamodb', () => {
             ChannelId: { S: channelId },
           },
           TableName: 'channel-table',
-        })
+        }),
       )
       expect(result).toEqual(channel)
     })
@@ -129,7 +129,7 @@ describe('dynamodb', () => {
             Token: { S: buildToken.value },
           },
           TableName: 'token-table',
-        })
+        }),
       )
       expect(result).toEqual({ submitter })
     })
@@ -153,7 +153,7 @@ describe('dynamodb', () => {
           ExpressionAttributeValues: { ':v1': { S: channelId } },
           KeyConditionExpression: 'ChannelId = :v1',
           TableName: 'build-table',
-        })
+        }),
       )
       expect(result).toEqual([
         {
@@ -181,7 +181,7 @@ describe('dynamodb', () => {
         expect.objectContaining({
           AttributesToGet: ['ChannelId', 'Data'],
           TableName: 'channel-table',
-        })
+        }),
       )
       expect(result).toEqual([
         {
@@ -217,7 +217,7 @@ describe('dynamodb', () => {
           FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
           IndexName: 'ExpirationIndex',
           TableName: 'build-table',
-        })
+        }),
       )
       expect(result).toEqual([
         {
@@ -253,7 +253,7 @@ describe('dynamodb', () => {
           FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
           IndexName: 'ExpirationIndex',
           TableName: 'token-table',
-        })
+        }),
       )
       expect(result).toEqual([
         {
@@ -289,7 +289,7 @@ describe('dynamodb', () => {
           FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
           IndexName: 'ExpirationIndex',
           TableName: 'token-table',
-        })
+        }),
       )
       expect(result).toEqual([
         {
@@ -322,7 +322,7 @@ describe('dynamodb', () => {
             },
           },
           TableName: 'build-table',
-        })
+        }),
       )
     })
   })
@@ -341,7 +341,7 @@ describe('dynamodb', () => {
             },
           },
           TableName: 'channel-table',
-        })
+        }),
       )
     })
   })
@@ -368,7 +368,7 @@ describe('dynamodb', () => {
             },
           },
           TableName: 'token-table',
-        })
+        }),
       )
     })
   })
@@ -401,7 +401,7 @@ describe('dynamodb', () => {
             },
           },
           TableName: 'channel-table',
-        })
+        }),
       )
       expect(result).toEqual(counts)
     })

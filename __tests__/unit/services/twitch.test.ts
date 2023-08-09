@@ -29,7 +29,7 @@ describe('twitch', () => {
 
         const body = getValidateEndpoint()
         return res(body ? ctx.json(body) : ctx.status(400))
-      })
+      }),
     )
   })
 
@@ -48,7 +48,7 @@ describe('twitch', () => {
 
           const body = getModsEndpoint(req.url.searchParams)
           return res(body ? ctx.json(body) : ctx.status(400))
-        })
+        }),
       )
     })
 
@@ -71,7 +71,7 @@ describe('twitch', () => {
       expect(result).toEqual([...newMods, ...mods])
       expect(getModsEndpoint).toHaveBeenCalledWith(new URLSearchParams({ broadcaster_id: '123456', first: '100' }))
       expect(getModsEndpoint).toHaveBeenCalledWith(
-        new URLSearchParams({ after: pagination, broadcaster_id: '123456', first: '100' })
+        new URLSearchParams({ after: pagination, broadcaster_id: '123456', first: '100' }),
       )
     })
 
@@ -112,7 +112,7 @@ describe('twitch', () => {
 
           const body = getChannelInfoEndpoint(req.url.searchParams)
           return res(body ? ctx.json(body) : ctx.status(400))
-        })
+        }),
       )
     })
 

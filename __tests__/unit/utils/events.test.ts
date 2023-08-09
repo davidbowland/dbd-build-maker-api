@@ -41,7 +41,7 @@ describe('events', () => {
       async (character: string | undefined) => {
         const invalidBuild = { ...buildKiller, character }
         await expect(formatBuild(invalidBuild, disabledOptions)).rejects.toThrow()
-      }
+      },
     )
 
     /* Killer */
@@ -56,7 +56,7 @@ describe('events', () => {
       async (addon1) => {
         const invalidBuild = { ...buildKiller, addon1 }
         await expect(formatBuild(invalidBuild, disabledOptions)).rejects.toThrow()
-      }
+      },
     )
 
     test.each([undefined, 'Fnord', 'Adrenaline Vial'])(
@@ -64,7 +64,7 @@ describe('events', () => {
       async (addon2) => {
         const invalidBuild = { ...buildKiller, addon2 }
         await expect(formatBuild(invalidBuild, disabledOptions)).rejects.toThrow()
-      }
+      },
     )
 
     test.each([undefined, 'Fnord', 'Devout Shrike Wreath'])(
@@ -72,7 +72,7 @@ describe('events', () => {
       async () => {
         const invalidBuild = { ...buildKiller, offering: undefined }
         await expect(formatBuild(invalidBuild, disabledOptions)).rejects.toThrow()
-      }
+      },
     )
 
     test.each([undefined, 'Fnord', 'Barbecue & Chilli'])('expect error on invalid perk1, killer - %s', async () => {
@@ -127,7 +127,7 @@ describe('events', () => {
       async () => {
         const invalidBuild = { ...buildSurvivor, offering: undefined }
         await expect(formatBuild(invalidBuild, disabledOptions)).rejects.toThrow()
-      }
+      },
     )
 
     test.each([undefined, 'Fnord', 'Aftercare'])('expect error on invalid perk1, survivor - %s', async () => {

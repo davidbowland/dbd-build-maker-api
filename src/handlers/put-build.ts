@@ -7,7 +7,7 @@ import status from '../utils/status'
 const confirmBuild = async (
   channelId: string,
   buildId: string,
-  build: Build
+  build: Build,
 ): Promise<APIGatewayProxyResultV2<Build>> => {
   try {
     log('Setting build and deleting token', { build, buildId, channelId })

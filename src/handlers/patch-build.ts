@@ -17,7 +17,7 @@ const applyJsonPatch = async (
   build: Build,
   channelId: string,
   buildId: string,
-  patchOperations: PatchOperation[]
+  patchOperations: PatchOperation[],
 ): Promise<APIGatewayProxyResultV2<Build>> => {
   const patchedBuild = applyPatch(build, patchOperations, throwOnInvalidJsonPatch, mutateObjectOnJsonPatch).newDocument
   const expirationDuration = patchedBuild.completed ? buildCompletedExpireDuration : buildUncompletedExpireDuration
@@ -35,7 +35,7 @@ const applyJsonPatch = async (
 const patchById = async (
   channelId: string,
   buildId: string,
-  patchOperations: PatchOperation[]
+  patchOperations: PatchOperation[],
 ): Promise<APIGatewayProxyResultV2<Build>> => {
   try {
     const build = await getBuildById(channelId, buildId)

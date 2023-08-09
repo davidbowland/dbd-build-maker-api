@@ -227,7 +227,7 @@ export const setTokenById = async (
   channelId: string,
   token: string,
   expiration: number,
-  submitter: string
+  submitter: string,
 ): Promise<PutItemOutput> => {
   const command = new PutItemCommand({
     Item: {
@@ -260,7 +260,7 @@ export const updateChannelCounts = async (channelId: string, updateLastModified 
       }
       return { ...previous, pending: previous.pending + 1 }
     },
-    { completed: 0, pending: 0 } as ChannelCounts
+    { completed: 0, pending: 0 } as ChannelCounts,
   )
 
   const channel = await getChannelById(channelId)

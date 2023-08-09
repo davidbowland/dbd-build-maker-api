@@ -102,7 +102,7 @@ describe('patch-build', () => {
       expect(mocked(dynamodb).setBuildById).toHaveBeenCalledWith(
         channelId,
         buildId,
-        expect.objectContaining(completedBuild)
+        expect.objectContaining(completedBuild),
       )
     })
 

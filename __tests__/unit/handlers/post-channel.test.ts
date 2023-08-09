@@ -67,7 +67,7 @@ describe('post-channel', () => {
       await postChannelHandler(event)
       expect(mocked(dynamodb).setChannelById).toHaveBeenCalledWith(
         channelId,
-        expect.objectContaining(channelNoModified)
+        expect.objectContaining(channelNoModified),
       )
     })
 
@@ -91,7 +91,7 @@ describe('post-channel', () => {
         expect.objectContaining({
           ...channelNoModified,
           channelId,
-        })
+        }),
       )
     })
   })

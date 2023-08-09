@@ -2,6 +2,10 @@ import { Release } from '../types'
 
 export default [
   {
+    filename: 'build-options-chapter-29',
+    releaseTime: '2023-08-29T15:00:00Z',
+  },
+  {
     filename: 'build-options-chapter-28.5',
     releaseTime: '2023-07-25T15:00:00Z',
   },

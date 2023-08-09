@@ -11,13 +11,13 @@ import status from '../utils/status'
 const applyJsonPatch = async (
   channel: Channel,
   channelId: string,
-  patchOperations: PatchOperation[]
+  patchOperations: PatchOperation[],
 ): Promise<APIGatewayProxyResultV2<Channel>> => {
   const updatedChannel = applyPatch(
     channel,
     patchOperations,
     throwOnInvalidJsonPatch,
-    mutateObjectOnJsonPatch
+    mutateObjectOnJsonPatch,
   ).newDocument
   try {
     await setChannelById(channelId, updatedChannel)
@@ -31,7 +31,7 @@ const applyJsonPatch = async (
 const patchById = async (
   channelId: string,
   patchOperations: PatchOperation[],
-  user?: User
+  user?: User,
 ): Promise<APIGatewayProxyResultV2<Channel>> => {
   try {
     const channel = await getChannelById(channelId)

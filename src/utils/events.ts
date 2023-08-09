@@ -89,7 +89,7 @@ export const formatBuild = async (build: Build, disabledOptions: string[]): Prom
           params: { maximum: [maximumExpiration] },
           schemaPath: '/properties/expiration/value',
         },
-      ])
+      ]),
     )
   }
 
@@ -126,7 +126,7 @@ export const formatSubmitter = (submitter: SubmitterSchema): string => {
 
 const parseEventBody = (event: APIGatewayProxyEventV2): any =>
   JSON.parse(
-    event.isBase64Encoded && event.body ? Buffer.from(event.body, 'base64').toString('utf8') : (event.body as string)
+    event.isBase64Encoded && event.body ? Buffer.from(event.body, 'base64').toString('utf8') : (event.body as string),
   )
 
 export const extractBuildFromEvent = async (event: APIGatewayProxyEventV2, disabledOptions: string[]): Promise<Build> =>

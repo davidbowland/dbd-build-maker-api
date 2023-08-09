@@ -66,7 +66,7 @@ describe('post-token', () => {
         channelId,
         buildToken.value,
         buildToken.expiration,
-        submitter
+        submitter,
       )
     })
 
