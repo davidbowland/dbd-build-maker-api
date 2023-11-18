@@ -5,7 +5,7 @@ import { Token } from '../types'
 // 60 minutes * 60 seconds * 1000 milliseconds = 3_600_000
 const TOKEN_EXPIRATION_DURATION = tokenExpireHours * 3_600_000
 
-// Don't allow vowells, digits that look like vowells, or ambiguous characters
+// Don't allow vowels, digits that look like vowels, or ambiguous characters
 const allowedCharacters = '256789bcdfghjmnpqrstvwxz'
 
 const valueToId = (value: number): string => {
