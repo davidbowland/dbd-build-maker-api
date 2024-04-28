@@ -30,10 +30,10 @@ jobs:
     steps:
       - name: Checkout latest code
         uses: actions/checkout@v4
-      - name: Install Node 18
+      - name: Install Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
       - name: Install and audit packages
         run: npm ci && npm audit --audit-level=high
         env:
@@ -56,10 +56,10 @@ jobs:
       - name: Install AWS SAM
         uses: aws-actions/setup-sam@v2
 
-      - name: Install Node 18
+      - name: Install Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
       - name: Build TypeScript into Lambda
         run: npm run build
         env:
@@ -104,10 +104,10 @@ jobs:
       - name: Install AWS SAM
         uses: aws-actions/setup-sam@v2
 
-      - name: Install Node 18
+      - name: Install Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
       - name: Build resources
         run: |
           npm run build
@@ -252,10 +252,10 @@ jobs:
     steps:
       - name: Checkout latest code
         uses: actions/checkout@v4
-      - name: Install Node 18
+      - name: Install Node 20
         uses: actions/setup-node@v4
         with:
-          node-version: 18.x
+          node-version: 20.x
       - name: Set git name and email
         run: |
           git config --local user.email "dbowland1+bot@gmail.com"
