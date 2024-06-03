@@ -115,9 +115,8 @@ Resources:
   DeleteChannelFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/delete-channel.deleteChannelByIdHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/delete-channel.deleteChannelByIdHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -151,6 +150,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 10
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/delete-channel.ts
 
   DeleteChannelLogGroup:
     Type: AWS::Logs::LogGroup
@@ -178,9 +185,8 @@ Resources:
   GetAllBuildsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/get-all-builds.getAllBuildsHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/get-all-builds.getAllBuildsHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -214,6 +220,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 30
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/get-all-builds.ts
 
   GetAllBuildsLogGroup:
     Type: AWS::Logs::LogGroup
@@ -241,9 +255,8 @@ Resources:
   GetAllChannelsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/get-all-channels.getAllChannelsHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/get-all-channels.getAllChannelsHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -277,6 +290,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 30
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/get-all-channels.ts
 
   GetAllChannelsLogGroup:
     Type: AWS::Logs::LogGroup
@@ -304,9 +325,8 @@ Resources:
   GetBuildByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/get-build-by-id.getBuildByIdHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/get-build-by-id.getBuildByIdHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -340,6 +360,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 10
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/get-build-by-id.ts
 
   GetBuildByIdLogGroup:
     Type: AWS::Logs::LogGroup
@@ -367,9 +395,8 @@ Resources:
   GetBuildOptionsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/get-build-options.getBuildOptionsHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/get-build-options.getBuildOptionsHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -400,6 +427,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 10
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/get-build-options.ts
 
   GetBuildOptionsLogGroup:
     Type: AWS::Logs::LogGroup
@@ -427,9 +462,8 @@ Resources:
   GetChannelByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/get-channel-by-id.getChannelByIdHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/get-channel-by-id.getChannelByIdHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -463,6 +497,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 10
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/get-channel-by-id.ts
 
   GetChannelByIdLogGroup:
     Type: AWS::Logs::LogGroup
@@ -490,9 +532,8 @@ Resources:
   GetTokenByIdFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/get-token-by-id.getTokenByIdHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/get-token-by-id.getTokenByIdHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -526,6 +567,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 10
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/get-token-by-id.ts
 
   GetTokenByIdLogGroup:
     Type: AWS::Logs::LogGroup
@@ -553,9 +602,8 @@ Resources:
   GetTwitchTokenFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/get-twitch-validate-token.getTwitchValidateTokenHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/get-twitch-validate-token.getTwitchValidateTokenHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -586,6 +634,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 90
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/get-twitch-validate-token.ts
 
   GetTwitchTokenLogGroup:
     Type: AWS::Logs::LogGroup
@@ -613,9 +669,8 @@ Resources:
   PatchBuildFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/patch-build.patchBuildHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/patch-build.patchBuildHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -654,6 +709,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 15
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/patch-build.ts
 
   PatchBuildLogGroup:
     Type: AWS::Logs::LogGroup
@@ -681,9 +744,8 @@ Resources:
   PatchChannelFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/patch-channel.patchChannelHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/patch-channel.patchChannelHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -717,6 +779,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 15
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/patch-channel.ts
 
   PatchChannelLogGroup:
     Type: AWS::Logs::LogGroup
@@ -744,9 +814,8 @@ Resources:
   PutBuildFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/put-build.putBuildHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/put-build.putBuildHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 192
@@ -787,6 +856,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 60
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/put-build.ts
 
   PutBuildLogGroup:
     Type: AWS::Logs::LogGroup
@@ -814,9 +891,8 @@ Resources:
   PostChannelFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/post-channel.postChannelHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/post-channel.postChannelHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -853,6 +929,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 90
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-channel.ts
 
   PostChannelLogGroup:
     Type: AWS::Logs::LogGroup
@@ -880,9 +964,8 @@ Resources:
   PostTokenFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/post-token.postTokenHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/post-token.postTokenHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 192
@@ -925,6 +1008,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 90
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-token.ts
 
   PostTokenLogGroup:
     Type: AWS::Logs::LogGroup
@@ -952,9 +1043,8 @@ Resources:
   PostPruneItemFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/post-start-prune.postStartPruneHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/post-start-prune.postStartPruneHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -989,6 +1079,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 90
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-start-prune.ts
 
   PostPruneLogGroup:
     Type: AWS::Logs::LogGroup
@@ -1016,9 +1114,8 @@ Resources:
   PostUpdateModsFunction:
     Type: AWS::Serverless::Function
     Properties:
-      Handler: handlers/post-update-mods.postUpdateModsHandler
-      CodeUri: './dist'
-      Runtime: nodejs18.x
+      Handler: src/handlers/post-update-mods.postUpdateModsHandler
+      Runtime: nodejs20.x
       Architectures:
         - x86_64
       MemorySize: 128
@@ -1052,6 +1149,14 @@ Resources:
         'environment': !Ref Environment
       Timeout: 90
       Tracing: Active
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Minify: true
+        Target: 'es2020'
+        Sourcemap: true
+        EntryPoints:
+          - src/handlers/post-update-mods.ts
 
   PostUpdateModsLogGroup:
     Type: AWS::Logs::LogGroup
