@@ -41,9 +41,9 @@ jobs:
       - name: Run tests
         run: npm run test
 
-  build-and-deploy-feature:
-    name: Deploy feature branch
-    if: startsWith(github.ref, 'refs/heads/feature')
+  build-and-deploy-testing:
+    name: Deploy testing branch
+    if: github.ref != 'refs/heads/master'
     needs: [test]
     runs-on: ubuntu-latest
     steps:
