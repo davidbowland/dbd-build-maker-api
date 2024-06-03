@@ -36,6 +36,19 @@ describe('build-options', () => {
     expect(result).toEqual(chapter26)
   })
 
+  test('expect function rejects when build options file is missing', async () => {
+    mocked(releaseDates).default = [
+      {
+        filename: 'build-options-chapter-doesnt-exist',
+        releaseTime: '1969-07-20T00:00:00Z',
+      },
+      ...releases,
+    ]
+
+    const result = await getActiveBuildOptions()
+    expect(result).toEqual(chapter25)
+  })
+
   test('expect function rejects when no options are found', async () => {
     mocked(releaseDates).default = []
 
