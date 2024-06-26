@@ -1,7 +1,7 @@
 import * as events from '@utils/events'
 import { channel, channelId, mods, twitchAuthToken, user } from '../__mocks__'
 import { getChannelInfo, getChannelMods, getUserFromEvent, validateToken } from '@services/twitch'
-import { rest, server } from '@setup-server'
+import { http, HttpResponse, server } from '@setup-server'
 import { APIGatewayProxyEventV2 } from '@types'
 import { mocked } from 'jest-mock'
 import { twitchClientId } from '@config'
@@ -22,13 +22,13 @@ describe('twitch', () => {
 
   beforeAll(() => {
     server.use(
-      rest.get(`${idHost}/oauth2/validate`, async (req, res, ctx) => {
-        if (`OAuth ${twitchAuthToken}` !== req.headers.get('Authorization')) {
-          return res(ctx.status(401))
+      http.get(`${idHost}/oauth2/validate`, async ({ request }) => {
+        if (`OAuth ${twitchAuthToken}` !== request.headers.get('Authorization')) {
+          return new HttpResponse(null, { status: 401 })
         }
 
         const body = getValidateEndpoint()
-        return res(body ? ctx.json(body) : ctx.status(400))
+        return body ? HttpResponse.json(body) : new HttpResponse(null, { status: 400 })
       }),
     )
   })
@@ -38,16 +38,17 @@ describe('twitch', () => {
 
     beforeAll(() => {
       server.use(
-        rest.get(`${apiHost}/helix/moderation/moderators`, async (req, res, ctx) => {
+        http.get(`${apiHost}/helix/moderation/moderators`, async ({ request }) => {
           if (
-            `Bearer ${twitchAuthToken}` !== req.headers.get('Authorization') ||
-            twitchClientId !== req.headers.get('Client-ID')
+            `Bearer ${twitchAuthToken}` !== request.headers.get('Authorization') ||
+            twitchClientId !== request.headers.get('Client-ID')
           ) {
-            return res(ctx.status(401))
+            return new HttpResponse(null, { status: 401 })
           }
 
-          const body = getModsEndpoint(req.url.searchParams)
-          return res(body ? ctx.json(body) : ctx.status(400))
+          const url = new URL(request.url)
+          const body = getModsEndpoint(url.searchParams)
+          return body ? HttpResponse.json(body) : new HttpResponse(null, { status: 400 })
         }),
       )
     })
@@ -102,16 +103,17 @@ describe('twitch', () => {
 
     beforeAll(() => {
       server.use(
-        rest.get(`${apiHost}/helix/users`, async (req, res, ctx) => {
+        http.get(`${apiHost}/helix/users`, async ({ request }) => {
           if (
-            `Bearer ${twitchAuthToken}` !== req.headers.get('Authorization') ||
-            twitchClientId !== req.headers.get('Client-ID')
+            `Bearer ${twitchAuthToken}` !== request.headers.get('Authorization') ||
+            twitchClientId !== request.headers.get('Client-ID')
           ) {
-            return res(ctx.status(401))
+            return new HttpResponse(null, { status: 401 })
           }
 
-          const body = getChannelInfoEndpoint(req.url.searchParams)
-          return res(body ? ctx.json(body) : ctx.status(400))
+          const url = new URL(request.url)
+          const body = getChannelInfoEndpoint(url.searchParams)
+          return body ? HttpResponse.json(body) : new HttpResponse(null, { status: 400 })
         }),
       )
     })
