@@ -6,12 +6,7 @@ export const getActiveBuildOptions = async (): Promise<BuildOptions> => {
   const currentTime = new Date()
   for (const release of releaseDates) {
     if (currentTime >= new Date(release.releaseTime)) {
-      try {
-        const optionsModule = await import(`../assets/${release.filename}`)
-        return optionsModule.default
-      } catch (error) {
-        logError('Unable to open build options file', { error, release })
-      }
+      return release.buildOptions
     }
   }
 

@@ -49,11 +49,6 @@ export interface ChannelBatch {
   id: string
 }
 
-export interface Release {
-  filename: string
-  releaseTime: string
-}
-
 export interface StringObject {
   [key: string]: any
 }
@@ -107,4 +102,9 @@ export interface Survivor {
 export interface BuildOptions {
   killer: Killer
   survivor: Survivor
+}
+
+export interface Release {
+  buildOptions: BuildOptions
+  releaseTime: string
 }

@@ -1,4 +1,6 @@
 import { Build, BuildBatch, Channel, ChannelBatch, ChannelMod, PatchOperation, Release, Token, User } from '@types'
+import buildOptionsChapter24 from '@assets/build-options-chapter-24'
+import buildOptionsChapter25 from '@assets/build-options-chapter-25'
 
 export const buildId = 'ytrfghjklkmnbvfty'
 
@@ -58,11 +60,11 @@ export const jsonPatchOperations: PatchOperation[] = [{ op: 'replace', path: '/n
 
 export const releases: Release[] = [
   {
-    filename: 'build-options-chapter-25',
+    buildOptions: buildOptionsChapter25,
     releaseTime: '2002-08-30T15:00:00Z',
   },
   {
-    filename: 'build-options-chapter-24',
+    buildOptions: buildOptionsChapter24,
     releaseTime: '2002-06-07T15:00:00Z',
   },
 ]
