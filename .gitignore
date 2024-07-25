@@ -1,9 +1,6 @@
 # AWS SAM
 .aws-sam/
 
-# Local logs
-local.log
-
 # Node artifact files
 node_modules/
 dist/
