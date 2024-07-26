@@ -264,42 +264,6 @@ describe('dynamodb', () => {
     })
   })
 
-  describe('scanExpiredTokens', () => {
-    test('should call DynamoDB with the correct arguments', async () => {
-      mockSend.mockResolvedValueOnce({
-        Items: [
-          {
-            ChannelId: { S: channelId },
-            Token: { S: buildToken.value },
-          },
-        ],
-      })
-
-      const result = await scanExpiredTokens()
-      expect(mockSend).toHaveBeenCalledWith(
-        expect.objectContaining({
-          ExpressionAttributeValues: {
-            ':v1': {
-              N: '1',
-            },
-            ':v2': {
-              N: expect.anything(),
-            },
-          },
-          FilterExpression: 'Expiration BETWEEN :v1 AND :v2',
-          IndexName: 'ExpirationIndex',
-          TableName: 'token-table',
-        }),
-      )
-      expect(result).toEqual([
-        {
-          channelId,
-          token: buildToken.value,
-        },
-      ])
-    })
-  })
-
   describe('setBuildById', () => {
     test('should call DynamoDB with the correct arguments', async () => {
       const modifiedBuild = { ...buildKiller, expiration: undefined }
