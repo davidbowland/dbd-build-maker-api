@@ -193,7 +193,7 @@ Resources:
       Description: dbd-build-maker-api get all builds by channel
       Policies:
         - AWSLambdaBasicExecutionRole
-        - DynamoDBCrudPolicy:
+        - DynamoDBReadPolicy:
             TableName: !Ref BuildTable
       Environment:
         Variables:
@@ -263,7 +263,7 @@ Resources:
       Description: dbd-build-maker-api get all items
       Policies:
         - AWSLambdaBasicExecutionRole
-        - DynamoDBCrudPolicy:
+        - DynamoDBReadPolicy:
             TableName: !Ref ChannelTable
       Environment:
         Variables:
@@ -333,7 +333,7 @@ Resources:
       Description: dbd-build-maker-api get build by ID
       Policies:
         - AWSLambdaBasicExecutionRole
-        - DynamoDBCrudPolicy:
+        - DynamoDBReadPolicy:
             TableName: !Ref BuildTable
       Environment:
         Variables:
@@ -470,7 +470,7 @@ Resources:
       Description: dbd-build-maker-api get by ID
       Policies:
         - AWSLambdaBasicExecutionRole
-        - DynamoDBCrudPolicy:
+        - DynamoDBReadPolicy:
             TableName: !Ref ChannelTable
       Environment:
         Variables:
@@ -540,7 +540,7 @@ Resources:
       Description: dbd-build-maker-api get token by ID
       Policies:
         - AWSLambdaBasicExecutionRole
-        - DynamoDBCrudPolicy:
+        - DynamoDBReadPolicy:
             TableName: !Ref TokenTable
       Environment:
         Variables:
@@ -900,8 +900,6 @@ Resources:
       Policies:
         - AWSLambdaBasicExecutionRole
         - DynamoDBCrudPolicy:
-            TableName: !Ref BuildTable
-        - DynamoDBCrudPolicy:
             TableName: !Ref ChannelTable
       Environment:
         Variables:
@@ -972,15 +970,12 @@ Resources:
       Description: dbd-build-maker-api post token
       Policies:
         - AWSLambdaBasicExecutionRole
-        - DynamoDBCrudPolicy:
-            TableName: !Ref BuildTable
-        - DynamoDBCrudPolicy:
+        - DynamoDBReadPolicy:
             TableName: !Ref ChannelTable
         - DynamoDBCrudPolicy:
             TableName: !Ref TokenTable
       Environment:
         Variables:
-          DYNAMODB_BUILD_TABLE_NAME: !Ref BuildTable
           DYNAMODB_CHANNEL_TABLE_NAME: !Ref ChannelTable
           DYNAMODB_TOKEN_TABLE_NAME: !Ref TokenTable
           TOKEN_EXPIRE_HOURS: 24
