@@ -1,5 +1,6 @@
 import { Release } from '../types'
 
+import buildOptionsChapter33 from './build-options-chapter-33'
 import buildOptionsChapter32_5 from './build-options-chapter-32.5'
 import buildOptionsChapter32 from './build-options-chapter-32'
 import buildOptionsChapter31 from './build-options-chapter-31'
@@ -14,6 +15,10 @@ import buildOptionsChapter25 from './build-options-chapter-25'
 import buildOptionsChapter24 from './build-options-chapter-24'
 
 export default [
+  {
+    buildOptions: buildOptionsChapter33,
+    releaseTime: '2024-08-30T15:00:00Z',
+  },
   {
     buildOptions: buildOptionsChapter32_5,
     releaseTime: '2024-07-16T15:00:00Z',
