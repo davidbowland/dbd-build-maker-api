@@ -1,5 +1,6 @@
 import { Release } from '../types'
 
+import buildOptionsChapter34 from './build-options-chapter-34'
 import buildOptionsChapter33 from './build-options-chapter-33'
 import buildOptionsChapter32_5 from './build-options-chapter-32.5'
 import buildOptionsChapter32 from './build-options-chapter-32'
@@ -15,6 +16,10 @@ import buildOptionsChapter25 from './build-options-chapter-25'
 import buildOptionsChapter24 from './build-options-chapter-24'
 
 export default [
+  {
+    buildOptions: buildOptionsChapter34,
+    releaseTime: '2024-11-28T15:00:00Z',
+  },
   {
     buildOptions: buildOptionsChapter33,
     releaseTime: '2024-08-30T15:00:00Z',
@@ -68,3 +73,9 @@ export default [
     releaseTime: '2022-06-07T15:00:00Z',
   },
 ] as Release[]
+
+/*
+Scrape code for generating build options:
+// Addons
+Array.from(temp0.querySelectorAll('tr')).map((el) => el.querySelector('th ~ th').innerText).join(',')
+*/

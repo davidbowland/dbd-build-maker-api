@@ -14,9 +14,3 @@ export const getBuildOptionsHandler = async (event: APIGatewayProxyEventV2): Pro
     return status.INTERNAL_SERVER_ERROR
   }
 }
-
-/*
-Scrape code for generating build options:
-// Addons
-Array.from(temp0.querySelectorAll('tr')).map((el) => el.querySelector('th ~ th').innerText).join(',')
-*/
